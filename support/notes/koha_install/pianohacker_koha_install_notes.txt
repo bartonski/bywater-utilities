@@ -1,0 +1,58 @@
+14:56 -!- Irssi: Starting query in OFTC with pianohacker
+14:56 <barton> What I've got set up so far is a git based install on a debian squeeze VM ... there are about half a dozen perl modules missing.
+14:58 <pianohacker> The ones that aren't in the repositories?
+14:59 <barton> Yeah ... they're available via CPAN, but I'm having problems getting them installed.
+15:00 <pianohacker> Errors? Feel free to paste them in here
+15:00 <barton> Graphics::Magick (optional), PDF::API2::Simple (required), Readonly::XS (optional), Text::Unaccent (required), XML::LibXSLT (required)
+15:00 <barton> yeah, gimme a sec.
+15:02 <barton> for PDF-API2-Simple : Can't locate inc/Module/Install.pm in @INC
+15:03 <barton> ... seems like a problem with the tarball, but ???
+15:03 <pianohacker> That is really bizarre. Let me try that on my VPS
+15:03 <barton> The installer should be setting up its own include path, right?
+15:04 <pianohacker> yeah, normally that isn't a problem... Do you have Module::Install installed?
+15:05 <barton> hm. good question..
+15:06 <barton> no, I didn't.
+15:07 <barton> Installing now. That might fix it.
+15:08 <barton> ok, that took care of PDF::API2::Simple.
+15:08 <pianohacker> sweet.
+15:08 <pianohacker> Do you have the development headers installed for GD?
+15:09 <pianohacker> no, that's not what graphics::magick needs, nvm...
+15:09 <barton> Text::Unaccent is failing its unit test.
+15:10 <pianohacker> graphics magick is in the repos: libgraphics-magick-perl
+15:10 <pianohacker> what error is unaccent giving?
+15:10 <barton> I'm going to try to pastebin it ...
+15:16 <barton> http://pastebin.com/ZtE5m0i8
+15:17 <pianohacker> okay, this one is a lot weirder
+15:18 <barton> It looked like there were some compiler warnings above ...
+15:19 <pianohacker> yeah, looks like it's not just you: https://rt.cpan.org/Public/Bug/Display.html?id=29390
+15:19 <pianohacker> install the version in the repos: libtext-unaccent-perl
+15:20 <barton> where is that?
+15:22 <pianohacker> that should be in the squeeze repositories: http://packages.debian.org/squeeze/libtext-unaccent-perl
+15:22 <barton> right.
+15:23 <barton> Just didn't know if you meant CPAN repositories, Koha repositories ... 
+15:23 <pianohacker> Ah kk :)
+15:23 <barton> lemmy tryit.
+15:24  * barton hopes that mixing cpan and debian doesn't cause headaches.
+15:25 <barton> satisfied the koha dependency. :-)
+15:25 <barton> XML::LibXSLT is a tough nut:
+15:26 <pianohacker> Just install as much as you can from the debian repos
+15:26 <pianohacker> That way they get updated/patched
+15:47 <barton> ok ... I got it built -- make && make test && make install worked just fine.
+15:47 <barton> how do I turn it on?
+15:58 <barton> nevermind ... looks like there are decent instructions in the INSTALL page.
+16:16 <pianohacker> anything else I can help with?
+16:21 <barton> no, I don't think so... I think that I'm going to chalk up what I learned on this VM to experience, then start again from scratch, following the INSTALL and INSTALL.DEBIAN notes as carefully as possible. I have a feeling that I took a few important steps out of order.
+16:40 <pianohacker> Koha installs are always tricky :) Only advice I can offer is to install as much as you can from the Debian repos
+16:41 <barton> hmm. the installation notes say exactly the opposite ;-)
+16:42 <pianohacker> wat
+16:42 <pianohacker> one sec
+16:43 <pianohacker> did you use the set-selections piece?
+16:43 <barton> the part where you select 'dev' vs ... whatever?
+16:44 <pianohacker> 1.4 of install.debian
+16:45 <barton> lemme check...
+16:46 <barton> ah. I read that backwards. :-)
+16:47 <pianohacker> haha, okay. I was about to be, "My whole life in #koha is a lie!"
+16:48 <barton> HAHAHAHAHA
+16:49 <barton> sorry. didn't mean to cause you to doubt your worldview. 
+16:51 <pianohacker> eh, we work in libraries, shit like this happens
+19:59 -!- pianohacker [~feoh3@vps.lanfort.org] has quit [Quit: leaving]

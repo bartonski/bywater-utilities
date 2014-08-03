@@ -1,0 +1,6 @@
+Add the following wrapper around javascript:
+
+// Add comment to describe what and where
+if (window.location.href.indexOf("path/scriptname") > -1) {
+    // Contents go here.
+}

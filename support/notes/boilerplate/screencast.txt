@@ -1,0 +1,2 @@
+Here is some info on how to do a screencast: http://bywatersolutions.com/2011/12/14/screencasts-for-koha-bugticket-reporting/
+

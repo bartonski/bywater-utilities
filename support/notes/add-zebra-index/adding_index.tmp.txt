@@ -1,0 +1,106 @@
+http://wiki.koha-community.org/wiki/MRenvoize/zebra
+
+
+ ~ashimema@cpc1-stev6-2-0-cust281.9-2.cable.virginm.net (OFTC)                                                                                                
+15:27 -!- Irssi: Starting query in OFTC with ashimema
+15:27 <ashimema> The zebra configuration is made up of a series of interconnected files serving different purposes:
+15:27 <ashimema> ~/kohaclone/etc/zebradb/biblios/etc/bib1.att
+15:27 <ashimema> Links Z39.50 attribute to zebra index name (Documentation for bib1 is available at LOC)
+15:27 <ashimema> ~/kohaclone/etc/zebradb/marc_defs/marc21/biblios/record.abs
+15:27 <ashimema> Links marc field to zebra index name
+15:27 <ashimema> ~/kohaclone/etc/zebradb/ccl.properties
+15:27 <ashimema> Koha searchable indexes (to be searchable by Koha, the zebra index must appear in here)
+15:27 <ashimema> ~/kohaclone/etc/zebradb/pqf.properties
+15:27 <ashimema> SRU searchable indexes (to be searchable by SRU, the zebra index must appear in here)
+15:28 <ashimema> that's obviosely in a dev setup.. but the files are the same even if the locations are different
+15:29 <barton> sorry -- SRU?
+15:30 <ashimema> SRU is z39.50 (but newer ;) )
+15:30 <ashimema> one tic, i'm just dumping my braindump for the ptfs-europe private wiki into a sub-page on my username on the community wiki.. it'll make 
+                 more sense that way.
+15:31 <ashimema> sru is the publically accessable search api.. you have to enable it in koha-conf.xml if you want to use it.. most libraries don't turn it on 
+                 it seems
+
+Field to index: 907$a
+
+Preparation
+1) In the steps below, replace '596$a' with '907$a' and '596a' with '907a' (g/596/907/g ought to do the trick)
+2) Make sure that we're suing dom indexing.
+3) Change all the paths below to match aarome.
+4) Find out what to put in place of the arabic text.
+5) Are we *really* edting C4/koha.pm???
+
+Step 1 Set up DOM indexing
+    You probably want to use Zebra with dom indexing. 
+    Package sites are usually GRS-1. If koha-conf.xml contains the two lines
+
+     <zebra_bib_index_mode>dom</zebra_bib_index_mode>
+     <zebra_auth_index_mode>dom</zebra_auth_index_mode>
+
+    In the same section as the <database>, <user> and <pass> tags MySQL, the site uses DOM. Otherwise, you will have to ask larryb to convert it and re-index.
+
+Step 2 Edit the index definitions.
+
+    Edit /etc/koha/zebradb/marc_defs/marc21/biblios/record.abs 
+
+        This file contains GRS1 configuraiton; the file won't be used by DOM, but it's a good idea to keep these in sync.
+
+        add this line
+         melm 596$a      Note596a:w
+
+    Edit /etc/koha/zebradb/marc_defs/marc21/biblios/biblio-koha-indexdefs.xml
+
+       Add the following lines:
+         <index_data_field xmlns="http://www.koha-community.org/schemas/index-defs" tag="596" subfields="a">
+           <target_index>Note596a:w</target_index>
+         </index_data_field>
+
+    Note 
+        596$a is the tag and subfield you want to make index for
+        Note596a is the index name
+        w the type of index (unless you know what you are doing, leave it as ':w')
+
+Step 3 Set up bib-1 (aka Z39.50) attributes.
+
+edit /etc/koha/zebradb/biblios/etc/bib1.att
+
+    Add this line
+        att 65 Note596a
+
+    Note 
+        The attribute number (65 in this example) can be selected from the Bib-1 attribute set (see http://www.loc.gov/z3950/agency/defns/bib1.html#use ) or a new attribute number can be made up.
+        Note596a is the index name
+
+Step 4
+
+In this path /etc/koha/zebradb/ccl.properties
+
+    Add this line 
+
+        Note596a 1=65
+
+    Note that
+        In '1=65', the character befrore the '=' is the numeral 1. 
+        Note596a is the index name
+        1=65 is the number of new indexes you add
+
+Step 5
+    Run the following command
+         xsltproc /etc/koha/zebradb/xsl/koha-indexdefs-to-zebra.xsl /etc/koha/zebradb/marc_defs/marc21/biblios/biblio-zebra-indexdefs.xml >/etc/koha/zebradb/marc_defs/marc21/biblios/biblio-zebra-indexdefs.xsl
+
+Step 6 Rebuild zebra index
+    Run the following command
+         /usr/share/koha/bin/migration_tools/rebuild_zebra.pl -b -r -v
+
+Step 7 Add new index to staff client
+
+    edit /usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/includes/search_indexes.inc
+      add the line
+        <option value="Note596a"> </option>
+      after all of the other <option value> tags.
+
+Step 8 Add new index to OPAC
+    edit /usr/share/koha/opac/htdocs/opac-tmpl/prog/en/modules/opac-advsearch.tt
+      add the line
+        <option value="Note596a"> </option>
+      after all of the other <option value> tags.
+

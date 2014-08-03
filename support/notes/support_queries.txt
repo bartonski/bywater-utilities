@@ -1,0 +1,37 @@
+Checked out and available.
+
+koha-mysql <<< "select count(*) from items where items.onloan is null and items.itemnumber in ( select itemnumber from issues );"
+
+
+# Adding report per ticket 16081, to run daily. 20140227.barton
+$KOHA_CRON_PATH/runreport.pl --to="support@bywatersolutions.com" --subject="[ticket.bywatersolutions.com #16081]" --format=csv 129 
+
+# find long fines histories.
+koha-mysql <<< "select borrowernumber, count(*) from accountlines group by borrowernumber order by count(*) desc" | less
+
+# List all holds, ordered by title and priority (makes a decent overview of holds).
+koha-mysql <<< "select title, priority, found from reserves inner join biblio using (biblionumber) order by title, priority" | less
+
+Update Statement:
+UPDATE table_name
+SET column1=value1,column2=value2,...
+WHERE some_column=some_value;
+
+e.g.
+
+UPDATE accountlines
+SET description = replace( description, '23:59', '11:59 PM' )
+WHERE accounttype='FU';
+
+# Sysprefs:
+koha-mysql <<< "select variable, value from systempreferences where variable like '%log'"
+
+Date and time functions: http://dev.mysql.com/doc/refman/5.1/en/date-and-time-functions.html
+
+DELETE FROM table_name
+WHERE some_column=some_value;
+
+query for OCLC number
+sudo koha-mysql hillwood <<< "select ExtractValue( marcxml, '//datafield[@tag=035]/subfield[@code=\"a\"]') from biblioitems" | tr -d '\r'
+
+Add \G to the end of a query (rather than ';') to have the query display vertically rather than horizontally.

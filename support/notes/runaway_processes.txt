@@ -1,0 +1,9 @@
+16:53 <@larryb_lunch> dani (and others) to check for a runaway process, login to the server and type: ps -ylA --sort:rss
+16:53 <@larryb_lunch> that lists the running processes sorted by size. Look for the biggest which will be at the bottom of the list
+16:53 <@larryb_lunch> you should never see a process that's bigger than mysql
+16:53 <@larryb_lunch> if you do, it's runaway. 
+
+TLDR: 
+
+ps -ylA --sort:rss
+Any processes below 'mysql' are runaways.

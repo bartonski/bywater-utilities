@@ -1,0 +1,70 @@
+Preparation
+1) Make sure that we're suing dom indexing.
+2) Change all the paths below to match aarome.
+3) Find out what to put in place of the arabic text.
+4) Are we *really* edting C4/koha.pm???
+
+Step 1 Set up DOM indexing
+    You probably want to use Zebra with dom indexing. 
+    Package sites are usually GRS-1. If koha-conf.xml contains the two lines
+
+     <zebra_bib_index_mode>dom</zebra_bib_index_mode>
+     <zebra_auth_index_mode>dom</zebra_auth_index_mode>
+
+    In the same section as the <database>, <user> and <pass> tags MySQL, the site uses DOM. Otherwise, you will have to ask larryb to convert it and re-index.
+
+Step 2 Edit the index definitions.
+
+    Edit ~/kohaclone/etc/zebradb/marc_defs/marc21/biblios/record.abs
+
+        This file contains GRS1 configuraiton; the file won't be used by DOM, but it's a good idea to keep these in sync.
+
+        Change 
+         #melm 035      Local-number,Identifier-standard
+
+         to
+
+         melm 035$a      Local-number,Identifier-standard
+
+    Generate ~/kohaclone/etc/zebradb/marc_defs/marc21/biblios/biblio-koha-indexdefs.xml
+
+          ~/kohaclone/misc/maintenance/make_zebra_dom_cfg_from_record_abs --input ~/kohaclone/etc/zebradb/marc_defs/marc21/biblios/record.abs --output ~/kohaclone/etc/zebradb/marc_defs/marc21/biblios/biblio-koha-indexdefs.xml
+
+    Note 
+        035$a is the tag and subfield you want to make index for
+        Local-number is the index name
+        w the type of index (unless you know what you are doing, leave it as ':w')
+
+Step 3 Set up bib-1 (aka Z39.50) attributes.
+
+edit /etc/koha/zebradb/biblios/etc/bib1.att
+    Make sure that the index name is present in bib1.att. It is already there for 'Local-number', so we're good.
+
+Step 4
+
+In this path /etc/koha/zebradb/ccl.properties
+
+    Make sure that the index name is present in ccl.properties: it should read as follows:
+        Local-number 1=12
+
+Step 5
+    Run the following command
+         xsltproc /etc/koha/zebradb/xsl/koha-indexdefs-to-zebra.xsl /etc/koha/zebradb/marc_defs/marc21/biblios/biblio-zebra-indexdefs.xml >/etc/koha/zebradb/marc_defs/marc21/biblios/biblio-zebra-indexdefs.xsl
+
+Step 6 Rebuild zebra index
+
+Step 7 Add new index to staff client
+
+    edit /usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/includes/search_indexes.inc
+      add the line
+        <option value="Note035a"> </option>
+      after all of the other <option value> tags.
+
+    -- We may be able to add this via intranetuserjs and opacuserjs.
+
+Step 8 Add new index to OPAC
+    edit /usr/share/koha/opac/htdocs/opac-tmpl/prog/en/modules/opac-advsearch.tt
+      add the line
+        <option value="Note035a"> </option>
+      after all of the other <option value> tags.
+

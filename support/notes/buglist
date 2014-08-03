@@ -1,0 +1,9 @@
+Type  | URL                                                             | Title
+Holds | http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=11947  | Hold priorities not re-calculated when hold is confirmed on checkin.
+Holds | http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=11956  | Hold priorities not re-calculated when hold is confirmed and transferred on checkin
+Circ  | http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=11563  | Class noEnterSubmit no longer functioning
+Holds | http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=10314  | CanItemBeReserved does not respect the holds policies
+Circ  | http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=98053  | Lost items are un-lost if returned, but not if renewed
+Notice| http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=11598  | Add --text option to overdue_notices similar to --html option
+Circ  | http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=11703  | Convert checkouts table to ajax datatable
+Fines | http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=6427   | Rewrite of the accounts system

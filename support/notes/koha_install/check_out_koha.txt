@@ -1,0 +1,2 @@
+git fetch --all
+git checkout -b stable-v3.12.07 v3.12.07

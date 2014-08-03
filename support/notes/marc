@@ -1,0 +1,3 @@
+Marc Export/
+df -h # check disk usage before export.
+perl tools/export.pl --format=marc --record-type=bibs --filename=/tmp/export.mrc

@@ -1,0 +1,15 @@
+I think that I'm going to need more information to be able to trouble shoot this issue:
+
+1) How often does this problem occur? Are there issues every time you try to ... ? Does it average once per hour? Once per day?
+
+2) Can you replicate the problem by ... ?
+
+3) What web browser are you using? What browser version?
+
+4) Is the issue browser specific (i.e. will it happen when ... in Chrome but not Firefox, or vise versa)?
+
+5) Have you cleared the browser cache?
+  -- firefox => https://support.mozilla.org/en-US/kb/how-clear-firefox-cache#w_clear-the-cache
+  -- chrome => https://support.google.com/chrome/answer/95582?hl=en
+
+6) Can you capture the problem in a screencast? See http://bywatersolutions.com/2011/12/14/screencasts-for-koha-bugticket-reporting/

@@ -1,0 +1,37 @@
+<h2 id="download-patch">Download patch</h2>
+<pre><code>patch_serial=4; wget -O bug_10827.${patch_serial}.patch http://bugs.koha-community.org/bugzilla3/attachment.cgi?id=25946</code></pre>
+<p>I'm plannning on writting a shell funciton that will take a list of patch URLs and download each, generating a different file name for each.</p>
+<h2 id="applying-the-patch">Applying the patch</h2>
+<pre><code>git am foo.patch</code></pre>
+<p>In fact, the attachment ids tend to be serial, so you can do something like this:</p>
+<pre><code>getpatch() {
+    local bugnum=$1
+    local description=&quot;$(sed &#39;s/ /-/g&#39; &lt;&lt;&lt; $2)&quot;
+    local attachment=$3
+    local bwspatches=&quot;$HOME/bwspatches&quot;
+    local kohaclone=&quot;$HOME/kohaclone&quot;
+    local patchfile=&quot;bug_${bugnum}.${description}.${attachment}.patch&quot;
+    echo &quot;Changing directory to &#39;$bwspatches&#39;&quot;
+    cd &quot;$bwspatches&quot;
+    wget -O &quot;$patchfile&quot; &quot;http://bugs.koha-community.org/bugzilla3/attachment.cgi?id=${attachment}&quot; || break
+    echo &quot;Changing directory to &#39;$kohaclone&#39;&quot;
+    cd $kohaclone
+    echo &quot;run the following command:&quot;
+    echo &quot;git am &#39;$bwspatches/$patchfile&#39;&quot;
+}</code></pre>
+<p>Then get the patches like this:</p>
+<pre><code># Ticket number 11563
+for attach in {26570..26573}
+do
+    getpatch 11563 &quot;Class noEnterSubmit no longer functioning&quot; $attach
+done</code></pre>
+<h2 id="creating-a-patch">Creating a patch</h2>
+<pre><code>git add &lt;filename&gt;
+git commit 
+git log 
+copy the commit number 
+git format-patch -1 &lt;commit&gt;</code></pre>
+<p>or</p>
+<pre><code>git format-patch HEAD^ -I &lt;commit&gt;</code></pre>
+<h2 id="backing-out-a-failed-merge">Backing out a failed merge</h2>
+<pre><code>git am --abort</code></pre>

@@ -1,0 +1,33 @@
+# ZEBRA FAST BIB AND AUTH INDEXING
+*/10 * * * * /usr/bin/flock -n /tmp/noauth.lockfile perl /home/koha/kohaclone/misc/migration_tools/rebuild_zebra.pl -a -z > /dev/null 2>&1
+*/10 * * * * /usr/bin/flock -n /tmp/nobibs.lockfile perl /home/koha/kohaclone/misc/migration_tools/rebuild_zebra.pl -x -b -z > /dev/null 2>&1
+
+ "select count(*) from biblio"                                                                                   
+ "select count(*) from items" 
+
+cd $HOME/kohaclone
+misc/migration_tools/rebuild_zebra.pl -v -b -r
+
+-v: verbose
+-b: biblios
+-r: reset
+
+vim $HOME/run_rebuild.sh # change email variable. 
+echo $HOME/run_rebuild.sh | at midnight
+
+package sites:
+
+1) check for ./run_rebuild.sh:
+* sudo koha-shell <instance>
+* cd $HOME
+* ls ./run_rebuild.sh
+* run using 'at', as above
+2) If ./run_rebuils.sh isn't available
+* exit koha-hsell
+* test permissions by running the following at command:
+* echo 'sudo koha-list > ./koha-list.out' at NOW
+* Check the contents of ./koha-list.out
+* In the following command, <instance> will be one of the lines from ./koha-list.out
+* echo 'sudo koha-rebuild-zebra -f <instance>' | at midnight
+* Probably best to test 'sudo' with 'at' before a live test, just to make sure permissions are set, and the process won't hang waiting for a sudo password.
+

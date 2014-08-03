@@ -1,0 +1,427 @@
+goddard: goddard: 
+goddard: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=1bc93afe-fc3b-6adc-1727-4d3cbe643dcf
+goddard: Staff: https://koha.goddard.edu
+goddard: Opac: http://catalog.goddard.edu 
+washoe: washoe: 
+washoe: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d463fd69-83c9-fef1-2d59-4e36d3a6b39c
+washoe: Staff: https://libstaff.washoecounty.us
+washoe: Opac: http://library.washoecounty.us
+cin: cin: 
+cin: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=a8ee5e23-8d1f-4030-6bfc-4f7f4627ae4b
+cin: Staff: http://staff.cin.bywatersolutions.com
+cin: Opac: http://catalog.cin.bywatersolutions.com
+nekls: nekls
+nekls: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=e9d25f5c-2931-a0d9-3d9a-4d73b43178d5
+nekls: Staff: https://staff.nexpresslibrary.org
+nekls: Opac: http://catalog.nexpresslibrary.org
+nekls-test: nekls-test
+nekls-test: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=adbf0f49-294b-0ba3-d6f4-4d8a4f31d83e
+nekls-test: Staff: http://staff-test.nexpresslibrary.org/
+nekls-test: Opac: http://catalog-test.nexpresslibrary.org/
+neharbor: neharbor: 
+neharbor: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=97e7ae61-b54a-fbae-5321-50f58a2933f6 
+neharbor: Staff: http://staff.neharbor.bywatersolutions.com
+neharbor: Opac: http://neharbor.bywatersolutions.com
+briarcliff: briarcliff: 
+briarcliff: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=ed17b126-186a-0946-0721-5245b014d3df
+briarcliff: Staff: http://staff.briarcliff.bywatersolutions.com
+briarcliff: Opac: http://briarcliff.bywatersolutions.com
+bluehill: bluehill: 
+bluehill: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=ce3074e5-a97d-be58-be3b-52d0470a673d 
+bluehill: Staff: http://www.catalog.bhpl.net:8080
+bluehill: Opac: http://www.catalog.bhpl.net
+esri: esri: 
+esri: esri: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=921fbc36-f684-ef12-600a-526ab8059a0d
+esri: Staff: https://staff.library.esri.com/ 
+esri: Opac: https://library.esri.com
+mapleleaf: mapleleaf:
+mapleleaf: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=535a2313-cdea-5f87-40c5-52ab52dae71f
+mapleleaf: Staff: http://59.46.193.49:8081
+mapleleaf: Opac: http://59.46.193.49:81
+amfalls: amfalls: 
+amfalls: amfalls: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=7a418c25-ce15-8a3b-5f8a-52091aea1883
+amfalls: Staff: http://staff.aflibrary.org
+amfalls: Opac: http://catalog.aflibrary.org
+dawson: dawson: 
+dawson: dawson: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=27a4e386-0315-e1d8-b264-5193d7763cbb
+dawson: Staff: http://control.dolls.dawsoncollege.qc.ca/
+dawson: Opac: http://discover.dolls.dawsoncollege.qc.ca/ 
+catamount: catamount: 
+catamount: catamount: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=92472131-1e14-e2a9-7406-519f9999a270
+catamount: Staff: http://staff.catamount.bywatersolutions.com/
+catamount: Opac: http://catamount.bywatersolutions.com/  
+ckls: ckls: 
+ckls: ckls: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=a8528c2e-fa49-f3aa-f958-4e1ed8cff60f
+ckls: Staff: http://staff.ckls.bywatersolutions.com/
+ckls: Opac: http://catalog.ckls.bywatersolutions.com/  
+dovernet: dovernet: 
+dovernet: dovernet: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=6bfcf4e8-ee6e-dea6-86bd-51f98ac94cd7
+dovernet: Staff: http://librarystaff.dover.nh.gov/
+dovernet: Opac: http://librarycatalog.dover.nh.gov/
+hernando: hernando: 
+hernando: hernando: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=7ba66e77-4bc4-b694-be31-4e5d049c8b87
+hernando: Staff: http://staff.hcpl.bywatersolutions.com/
+hernando: Opac:  http://catalog.hcpl.bywatersolutions.com/
+masscat: masscat: 
+masscat: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=a0e79056-6d1b-d3f8-2a9d-4d4094a0ff86
+masscat: Staff: http://masscat-staff.bywatersolutions.com/
+masscat: Opac:  http://masscat.bywatersolutions.com/
+vokal: vokal: 
+vokal: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=9df4947a-2979-5d68-9a92-4d3cbe38c094
+vokal: Staff: http://staff.kohavt.org
+vokal: Opac: http://vokal.kohavt.org
+mdah: mdah: 
+mdah: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=2ec6065e-7870-503c-d222-519c03fae694
+mdah: Staff: http://zed.mdah.state.ms.us:8080
+mdah: Opac: http://zed.mdah.state.ms.us/
+stanwood: stanwood: 
+stanwood: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=74d3d53b-838a-c12b-dd40-523c89ef88b3
+stanwood: Staff: http://circulation.stanwood.wednet.edu/
+stanwood: Opac: http://library.stanwood.wednet.edu/
+walla: walla: 
+walla: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d2217ad1-e9c3-96d6-c033-4f03308899b8
+walla: Staff: http://staff.wallawalla.bywatersolutions.com/
+walla: Opac: http://catalog.wallawalla.bywatersolutions.com/
+roseman: roseman: 
+roseman: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=bd3576a8-c6f6-e6d4-d52a-51c0d001d6e8
+roseman: Staff: http://libsys.roseman.edu/
+roseman: Opac:  http://libcatalog.roseman.edu/
+sanbenito: sanbenito: 
+sanbenito: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=8708679f-c53a-65c9-3c9c-4d3cbe4da45f
+sanbenito: Staff: http://staff.sanbenitofl.org/
+sanbenito: Opac: http://catalog.sanbenitofl.org/
+littleelm: littleelm: 
+littleelm: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=7900323f-2578-cb77-f238-50197a9f3f29
+littleelm: Staff: http://staff.littleelm.bywatersolutions.com/
+littleelm: Opac: http://littleelm.bywatersolutions.com/  
+roseville: roseville: 
+roseville: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=7efe1333-6fb9-299f-1cac-50198026d7c6
+roseville: Staff: https://koha.roseville.ca.us/
+roseville: Opac:  https://library.roseville.ca.us/
+pasco: pasco: 
+pasco: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=77dc7984-d30e-5c67-bb1e-52b082ae1d8e
+pasco: Staff: http://staffils.pascolibraries.org/
+pasco: Opac:  http://catalog.pascolibraries.org/
+pasco-db: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=3fdfaa48-419a-86c4-7925-52b1fc1138f7
+corona: 
+corona: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=a0ccd19e-67d3-68ed-9a7f-5188011f10ea
+corona: Staff: http://staff.corona.bywatersolutions.com/
+corona: Opac:  http://corona.bywatersolutions.com/
+nhais: nhais:
+nhais: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=8355103a-d6f9-4dd2-8ad2-51def6c7b944
+nhais: Staff: http://staff.nhais.bywatersolutions.com/
+nhais: Opac: http://nhais.bywatersolutions.com/
+nekls-db: nekls-db:
+nekls-db: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=dca8d019-c8e0-79f9-1b70-528a48c3f278
+waterford: waterford:
+waterford: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=305cc3e0-14bd-8d5d-bdb5-518d7b1a3b4f
+waterford: Staff: http://staff.waterfordtwplibrary.org/
+waterford: Opac: http://catalog.waterfordtwplibrary.org/
+frgml: frgml (fox river):
+frgml: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=ef7af52f-c37f-6433-71a8-5320882f5f27
+frgml: Staff: http://staff.frgml.bywatersolutions.com/
+frgml: Opac: http://frgml.bywatersolutions.com/
+huntsville: huntsville:
+huntsville: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=8819800c-5d53-eec7-1f7a-522f916e197a
+huntsville: Staff: https://staffcat.hmcpl.org/
+huntsville: Opac: http://catalog.hmcpl.org/
+mtpl: mtpl:
+mtpl: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=51f6a222-09d1-22a3-92b1-4e8350f97df0
+mtpl: Staff: http://staff.mtpl.bywatersolutions.com/
+mtpl: Opac: http://catalog.mtpl.bywatersolutions.com/
+lawton: lawton:
+lawton: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=1b5d3f3a-e602-ce3c-1f86-4ec434ca3458
+lawton: Staff: http://koha.cityof.lawton.ok.us/
+lawton: Opac: http://library.cityof.lawton.ok.us/
+foundation: foundation:
+foundation: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=de9bf47e-34ac-d788-febe-4f0b3abeda7e
+foundation: Staff: http://12.53.96.216:8080/
+foundation: Opac: http://catalog.foundationcenter.org/
+ncrl: ncrl:
+ncrl: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d3fc9980-0165-b68f-5af2-4eef67e5e365
+ncrl: Staff: http://koha.ncrl.org/
+ncrl: Opac: http://catalog.ncrl.org/
+appomattox: appmtx:
+appomattox: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=db11d019-fe45-8711-f085-52f425111898
+appomattox: Staff: http://www.jrjml.org:8088/
+appomattox: Opac: http://www.jrjml.org:8080/
+appmtx: appmtx: 
+appmtx: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=db11d019-fe45-8711-f085-52f425111898
+appmtx: Staff: http://www.jrjml.org:8088/
+appmtx: Opac: http://www.jrjml.org:8080/
+sibley: sibley:
+sibley: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=8fb272ae-d527-95ef-d101-4d3cbe0e0491
+sibley: Staff: http://koha.sibley.org:8080/
+sibley: Opac: http://koha.sibley.org
+coos: coos:
+coos: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=20b24f1e-cc60-f003-77d5-530e4db9ff06
+coos: Staff: https://koha.cclsd.org/
+coos: Opac: http://catalog.cclsd.org/
+harrison: harrison:
+harrison: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=361d82a3-86aa-45e5-478e-4e5c0a3b5d33
+harrison: Staff: http://staff.harrison.bywatersolutions.com/
+harrison: Opac: http://catalog.harrison.bywatersolutions.com/
+corpus: corpus:
+corpus: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d8e49d9c-85c0-58cb-ed75-4e52cc43e506
+corpus: Staff: http://elibrary.cclibraries.com:8080
+corpus: Opac: http://elibrary.cclibraries.com
+arcadiapl: arcadiapl:
+arcadiapl: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=38a60400-be30-d618-b670-4d3ca7d62b2b
+arcadiapl: Staff: http://192.168.106.2:8080/
+arcadiapl: Opac: http://catalog.ci.arcadia.ca.us/
+bennington: bennington:
+bennington: Sugar URL: 
+bennington: Staff: 
+bennington: Opac: 
+galen: galen:
+galen: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d78c510b-86cf-3e37-5bcc-532b2f5cc43b
+galen: Staff: http://staff.galen.bywatersolutions.com/
+galen: Opac: http://galen.bywatersolutions.com/
+centenary: centenary:
+centenary: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=1b9b22a9-156d-0266-2463-4dd503dc8188
+centenary: Staff: http://staff.centenary.bywatersolutions.com/
+centenary: Opac: http://catalog.centenary.bywatersolutions.com/
+athens: athens:
+athens: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=b1cb14f9-9428-9e6a-044e-4d3caa5c2b24
+athens: Staff: http://koha.myacpl.org/
+athens: Opac: http://search.myacpl.org/
+texastech: texastech:
+texastech: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=5cf22f11-3043-e526-303a-4e31b4a5151e
+texastech: Staff: https://librarystaff.ttuhsc.edu/
+texastech: Opac: http://librarycatalog.ttuhsc.edu/
+ripon: ripon:
+ripon: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=4d399e91-5b2c-3631-b1ac-4ebd82f2a20d
+ripon: Staff: http://staff.ripon.bywatersolutions.com/
+ripon: Opac: http://catalog.ripon.bywatersolutions.com/
+rhcl: rhcl:
+rhcl: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=826aeed4-5aec-a453-a29c-4d3cbe8c3dd1
+rhcl: Staff: http://150.199.116.40:8080/
+rhcl: Opac: http://opac.rhcl.org/
+lopez: lopez:
+lopez: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=ae25099c-acfd-8d8b-fa15-506ee9eb8875
+lopez: Staff: http://staff.lopez.bywatersolutions.com/
+lopez: Opac: http://lopez.bywatersolutions.com/
+aarome: aarome:
+aarome: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=eaab906b-abc5-9ee5-6801-516c79511a3f
+aarome: Staff: http://koha.aarome.org/
+aarome: Opac: http://library.aarome.org/
+aarome-test: aarome-test:
+aarome-test: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=2db71340-354d-09b7-e92e-52fc0f1eb13b
+aarome-test: Staff: http://koha-dev.aarome.org/
+aarome-test: Opac: http://library-dev.aarome.org/
+tlccat: tlccat:
+tlccat: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=1cbeaf11-eb29-6e30-3e8c-510bf41a90e4
+tlccat: Staff: http://staff.tlccat.bywatersolutions.com/
+tlccat: Opac: http://tlccat.bywatersolutions.com/
+elibris: tlccat:
+elibris: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=1cbeaf11-eb29-6e30-3e8c-510bf41a90e4
+elibris: Staff: http://staff.tlccat.bywatersolutions.com/
+elibris: Opac: http://tlccat.bywatersolutions.com/
+macon: macon:
+macon: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=3c747cd6-1c9c-e4db-7e48-4d3cbeb68ba6
+macon: Staff: http://circ.maconlibrary.org:8080/
+macon: Opac: http://circ.maconlibrary.org/
+losgatos: losgatos:
+losgatos: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=LIBS_Libraries&action=DetailView&record=340214f3-fa7c-dd63-4c80-4d46d7fb79f9
+losgatos: Staff: http://libstaff.losgatosca.gov/
+losgatos: Opac: http://catalog.losgatosca.gov/
+hillwood: hillwood:
+hillwood: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=460a01e2-9edd-5681-df4e-52b4dcdb0a9c
+hillwood: Staff: http://koha.hillwoodmuseum.org/
+hillwood: Opac: http://library.hillwoodmuseum.org/
+nnhlc: nnhlc:
+nnhlc: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=e2aacfb2-8f01-e88f-f7fb-50fea649a47d
+nnhlc: Staff: http://staff.nnhlc.bywatersolutions.com
+nnhlc: Opac: http://nnhlc.bywatersolutions.com/
+incarnate: incarnate:
+incarnate: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=118b5cc0-2d5f-2409-fcfa-4df0af88c413
+incarnate: Staff: https://staff.iwhs.bywatersolutions.com/
+incarnate: Opac: http://catalog.iwhs.bywatersolutions.com/
+barton: barton:
+barton: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d3891427-cd4f-6a22-4246-5363ebd344f7
+barton: Staff: set up ssh port forwarding through annon: ssh -L 2000:150.199.192.184:8080 barton@annon.bywatersolutions.com, then http://localhost:2000
+barton: Opac: http://catalog.bclib.info/ 
+arcadiau: arcadiau:
+arcadiau: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=be5ecd74-74c3-8540-7a4e-4e3051f221c5
+arcadiau: Staff: http://staff.arcadiau.bywatersolutions.com/
+arcadiau: Opac: http://koha.arcadia.edu/
+hamilton: hamilton:
+hamilton: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=e157b182-206b-9745-7e17-52680ab201c5
+hamilton: Staff: http://libstaff.hamiltonnjpl.org/
+hamilton: Opac: http://catalog.hamiltonnjpl.org/
+hch: hch:
+hch: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=ae79c180-6f4f-e8c5-db4c-51b649a6c2eb
+hch: Staff: http://staff.hch.bywatersolutions.com/
+hch: Opac: http://hch.bywatersolutions.com/
+butte: butte:
+butte: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d19e0ac7-27ba-bced-88fd-53753f1c4c6b
+butte: Staff: http://staff.butte.bywatersolutions.com/
+butte: Opac: http://library.buttecounty.net/
+siskiyou: northnet-siskiyou:
+siskiyou: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=dd381c2f-e934-bb09-7032-4dca9c7f6a9a
+siskiyou: Staff: http://staff.siskiyou.bywatersolutions.com
+siskiyou: Opac: http://catalog.siskiyou.bywatersolutions.com
+northnet-union: northnet-union:
+northnet-union: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=dd381c2f-e934-bb09-7032-4dca9c7f6a9a
+northnet-union: Staff: http://staff.orland.bywatersolutions.com/
+northnet-union: Opac: http://catalog.orland.bywatersolutions.com/
+southernnh: southernnh: 
+southernnh: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=138cfd73-c385-1e3b-ef14-4e8f234d143e
+southernnh: Staff: http://staff.southernnh.bywatersolutions.com/
+southernnh: Opac: http://catalog.southernnh.bywatersolutions.com/
+moab: moab:
+moab: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d1f1b596-9169-4810-ab73-500dba30d487
+moab: Staff: http://staff.moab.bywatersolutions.com:8080/
+moab: Opac: http://koha.moablibrary.org/
+carnegie: carnegie:
+carnegie: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=9607f450-2f3d-814d-f749-538d4d9f959d
+carnegie: Staff: https://staff.dubuque.lib.ia.us
+carnegie: Opac: https://catalog.dubuque.lib.ia.us/
+rahway: rahway:
+rahway: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=3cf9e5a7-8fd9-cf1b-da65-537e79f1d360
+rahway: Staff: http://staff.rahwaylibrary.org
+rahway: Opac: http://catalog.rahwaylibrary.org
+threerivers: threerivers:
+threerivers: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=4ecd6641-88b6-6471-bb3c-4d8f383402a7
+threerivers: Staff: http://staff.rivers.bywatersolutions.com/
+threerivers: Opac: http://catalog.rivers.bywatersolutions.com/
+farmington: farmington:
+farmington: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=8a100013-213c-5267-8f3b-4d3cbe063a08
+farmington: Staff: http://staff.farmingtonlibraries.org/
+farmington: Opac: http://catalog.farmingtonlibraries.org/ 
+vmi: vmi:
+vmi: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=eb0dd26e-10a5-7ddd-1c5e-4f7dfae1e3e5
+vmi: Staff: https://144.75.4.7/
+vmi: Opac: http://koha.vmi.edu/
+banning: banning:
+banning: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=cac16de5-6136-42b6-61b7-50197f432129
+banning: Staff: http://staff.banning.bywatersolutions.com/
+banning: Opac: http://catalog.banning.bywatersolutions.com/
+erikson: erikson:
+erikson: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=eec7eab5-d0b6-4e86-10a0-4d3cbeeef1c7
+erikson: Staff: http://erikson-staff.bywatersolutions.com/
+erikson: Opac: http://erikson.bywatersolutions.com/
+stowe: stowe:
+stowe: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=f3f7e2a7-19cf-0f18-6a51-4fd25787c573
+stowe: Staff:http://catalog.stowelibrary.org:8080 
+stowe: Opac: http://catalog.stowelibrary.org
+spanishfork: spanishfork:
+spanishfork: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=ae7d87c0-6a99-0889-c469-507709eeeb66
+spanishfork: Staff: http://staff.spanishfork.bywatersolutions.com/
+spanishfork: Opac: http://catalog.spanishfork.bywatersolutions.com/
+lcc: lcc:
+lcc: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=b4e19e39-8427-efb3-07cb-4f9990f20e4c
+lcc: Staff: http://admin.librarycatalog.lcc.lt/
+lcc: Opac: http://koha.lcc.lt/
+plum: plum:
+plum: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=85685ea3-28c6-46ee-4dbe-4f4f9e0e30b2
+plum: Staff: http://staff.plumcreeklibrary.net:8080
+plum: Opac: http://opac.plumcreeklibrary.net
+arnold: arnold:
+arnold: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=f3045dd6-1a0e-ef65-77a2-4da83706c3fd
+arnold: Staff: http://staff.arnold.bywatersolutions.com
+arnold: Opac: http://catalog.arnold.bywatersolutions.com
+bjesf: bjesf:
+bjesf: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=8c82938f-8c07-9511-4bbe-4f29b4673cfe
+bjesf: Staff: http://staff.bjesf.bywatersolutions.com/
+bjesf: Opac: http://catalog.bjesf.bywatersolutions.com/
+brooklaw: brooklaw:
+brooklaw: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=90c2a2af-0acb-1fda-2f8c-4de4e04dec0c
+brooklaw: Staff: https://staff.brooklaw.bywatersolutions.com
+brooklaw: Opac: http://catalog.brooklaw.bywatersolutions.com
+jfku: jfku:
+jfku: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=4819fd47-bfb8-5e17-9691-53a8b5f9987b
+jfku: Staff: http://libstaff.jfku.edu/
+jfku: Opac: http://catalog.jfku.edu/
+sekls: sekls:
+sekls: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d1e3ffe8-d517-1a1c-5d96-51f05aab39d5
+sekls: Staff: http://staff.seknfind.org/
+sekls: Opac: http://www.seknfind.org/
+pals: pals:
+pals: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=e2098cf9-adf8-4b98-4ead-53b19552de97
+pals: Staff: http://staff.pals.bywatersolutions.com
+pals: Opac: http://pals.bywatersolutions.com
+freeportmepl: freeportmepl:
+freeportmepl: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=17097661-8fe8-e0bd-fbe6-4d3cbeff90e3 
+freeportmepl: Staff: http://staff.freeportlibrary.com/
+freeportmepl: Opac: http://catalog.freeportlibrary.com/
+manhat: manhat:
+manhat: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=564bde74-39b9-2bf9-ce82-53bc37c80921
+manhat: Staff: https://staff.jaspercat.manhattan.edu/
+manhat: Opac: https://jaspercat.manhattan.edu/
+sliowa: sliowa:
+sliowa: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=4f161336-5728-7c40-9a9d-516c92dc52f6
+sliowa: Staff: https://koha.silo.lib.ia.us:8443/
+sliowa: Opac: http://koha.silo.lib.ia.us/
+fullsail: fullsail:
+fullsail: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=1392c2c3-646c-b56e-fe89-513e49994acf
+fullsail: Staff: http://staff.fullsail.bywatersolutions.com/
+fullsail: Opac: http://fullsail.bywatersolutions.com/
+pacifica: pacifica:
+pacifica: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=7189501a-65c1-6e50-f446-4d3cbec18dc1
+pacifica: Staff: http://kohalogin.pacifica.edu/
+pacifica: Opac: http://catalog.my.pacifica.edu/
+greenmtn: greenmtn:
+greenmtn: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=aebb62b7-1ffb-4a2b-453c-4e4a90f3fc40
+greenmtn: Staff: http://staff.greenmtn.bywatersolutions.com/
+greenmtn: Opac: http://catalog.greenmtn.bywatersolutions.com/
+tribeca: tribeca:
+tribeca: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=4980e1e3-2d0a-9a8a-c43e-5214ebf8d4c5
+tribeca: Staff: http://staff.tribeca.bywatersolutions.com/
+tribeca: Opac: http://libcat.tfa.edu/
+abbott: abbott:
+abbott: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=22174d14-a2f4-9215-c13f-53067728112b
+abbott: Staff: http://libstaff.abbottlibrary.org/
+abbott: Opac: http://catalog.abbottlibrary.org/
+addis: addis:
+addis: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=94100773-ff09-9cc5-fb4d-50cf68b09954
+addis: Staff: http://213.55.85.58:8088/
+addis: Opac: http://213.55.85.58:8008/
+albright: albright:
+albright: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=ac615e45-45f6-6c15-adde-50fef33fdf8d
+albright: Staff: https://libstaff.albright.edu/
+albright: Opac: http://catalion.albright.edu/
+alpine: alpine:
+alpine: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=78a87ce0-a4d1-aa9a-11a7-4d3ca3456505
+alpine: Staff: http://koha.americanalpineclub.org/
+alpine: Opac: http://booksearch.americanalpineclub.org/
+anderson: anderson:
+anderson: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=31ea0768-32f4-6ac0-7aaf-52a0f71fde64
+anderson: Staff: See Google Doc
+anderson: Opac: See Google Doc
+asu: asu:
+asu: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=c5cd9490-b327-7314-dc1b-4d90dbb54404
+asu: Staff: https://staff-koha.la.asu.edu/
+asu: Opac: https://koha.la.asu.edu/
+bartoncty: bartoncty:
+bartoncty: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=d3891427-cd4f-6a22-4246-5363ebd344f7
+bartoncty: Staff: See Sugar
+bartoncty: Opac: See Sugar
+bethelu: bethelu:
+bethelu: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=5038e011-202d-a3cb-8d2a-4e7751d5fbde
+bethelu: Staff: http://staff.bethelu.bywatersolutions.com/
+bethelu: Opac: http://catalog.bethelu.bywatersolutions.com/
+bethlehem: bethlehem:
+bethlehem: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=be908558-adea-6e6e-4731-4fd60880d8fa
+bethlehem: Staff: http://staff.bethlehem.bywatersolutions.com/
+bethlehem: Opac: http://catalog.bethlehem.bywatersolutions.com/
+bma: bma:
+bma: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=c1ed46ee-5ba1-42dd-5db0-5285345604d1
+bma: Staff: http://staff.bma.bywatersolutions.com/
+bma: Opac: http://bma.bywatersolutions.com/
+bookbinders: bookbinders:
+bookbinders: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=2d5a00bb-d4bd-daf9-8839-53481f3e2719
+bookbinders: Staff: http://staff.library.bookbindersmuseum.org/
+bookbinders: Opac: http://library.bookbindersmuseum.org/
+boulderjcc: boulderjcc:
+boulderjcc: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=a472ce08-6b5b-a712-153e-4e37f6a58538
+boulderjcc: Staff: http://staff.boulderjcc.bywatersolutions.com/
+boulderjcc: Opac: http://catalog.boulderjcc.bywatersolutions.com/
+broad: broad:
+broad: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=1bf9215e-5888-f21e-89bf-528bc44affca
+broad: Staff: http://staff.broad.bywatersolutions.com/
+broad: Opac: http://broad.bywatersolutions.com/
+marlboro: marlboro:
+marlboro: Sugar URL: http://sugarcrm.bywatersolutions.com/index.php?module=SYS_Systems&action=DetailView&record=40e83f5d-48e7-125b-b014-4d3cbebb3699
+marlboro: Staff: https://libstaff.marlboro.edu/
+marlboro: Opac: https://catalog.marlboro.edu

@@ -1,0 +1,176 @@
+<h1>Entering Good Support Tickets, Revisited</h1>
+
+<p>Two years ago, Thatcher Rea posted <a href="http://bywatersolutions.com/2012/04/09/entering-good-support-tickets/">Entering Good Support Tickets</a>. I felt that there was more to be said on the topic. </p>
+
+<p>Technical support is one of the primary services that we provide at Bywater Solutions. Our goal is to provide answers to your technical issues as quickly as possible, and to provide the best quality service possible -- solving the problem the first time, rather than having to revisit issues multiple times.</p>
+
+<p>In order to do this, we need to get the best possible descriptions of technical problems up front.</p>
+
+<p>Note: I've used the Bywater Solutions <a href="http://intranet.bywatersolutions.com">Demo Staff Client</a> for examples below. Username = <em>bywater</em> Password = <em>bywater</em>.</p>
+
+<h2>The Subject line of your email counts -- make is short and sweet</h2>
+
+<p>The first thing that we see when a support ticket arrives is the subject line. A well written subject may be the difference between a ticket that gets solved in five minutes and one that takes hours or more to resolve. The subject should be memorable and should point us in the right direction.</p>
+
+<h2>Text is better than pictures</h2>
+
+<p>Screen shots have their place -- some times they can tell a story that is difficult to put into words -- however it is impossible to copy and paste text from a screenshot. Screenshots should be used for illustration and clarification, but the body of the description <em>must</em> contain text.</p>
+
+<h2>Always copy and paste -- don't retype.</h2>
+
+<p>There are certain pieces of information within a trouble ticket that are useless if they are not typed correctly: biblionumbers, barcodes, item numbers, URLs will all fail if mis-typed. Error messages on screen should also be copied if at all possible.</p>
+
+<h2>Including URLs: The secret weapon of Koha support.</h2>
+
+<p>Because Koha is a web based application, the URL will, at the very least, tell us which web address is causing the error. In fact, the URL can contain a good deal more information than that. For instance, the URL <a href="http://intranet.bywatersolutions.com/cgi-bin/koha/members/moremember.pl?borrowernumber=165">http://intranet.bywatersolutions.com/cgi-bin/koha/members/moremember.pl?borrowernumber=165</a> contains two parts: <a href="http://intranet.bywatersolutions.com/cgi-bin/koha/members/moremember.pl">http://intranet.bywatersolutions.com/cgi-bin/koha/members/moremember.pl</a> is the address of the page that handles patron information, and <a href="http://intranet.bywatersolutions.com/cgi-bin/koha/members/moremember.pl?borrowernumber=165">?borrowernumber=165</a> specifies patron number '165' on that page. Copying and pasting the full URL of a page that is causing problems can supply a lot of information in a trouble ticket. This is escpecially helpful when a page is displaying an error message of some kind.</p>
+
+<h2>Information to include in a support ticket:</h2>
+
+<h3>Where does the problem occur?</h3>
+
+<ul>
+<li>In the OPAC?</li>
+<li>In the Staff Client?
+<ul>
+<li>What part?
+<ul>
+<li>Circulation?</li>
+<li>Search?</li>
+<li>Holds?</li>
+</ul></li>
+</ul></li>
+<li>Paste the URL into the ticket.</li>
+</ul>
+
+<h3>Is there an error message?</h3>
+
+<p>Paste the <em>text</em> into the ticket.</p>
+
+<h3><em>Always</em> include an example patron, item or title. Names are good, ID numbers are better:</h3>
+
+<h4>Patron:</h4>
+
+<ul>
+<li>Good: First Name, Last Name</li>
+<li>Better: Cardnumber</li>
+<li>Best: Borrowernumber / Patron URL</li>
+</ul>
+
+<h4>Item:</h4>
+
+<ul>
+<li>Good: Title</li>
+<li>Better: Barcode</li>
+<li>Best: Itemnumber / Item URL</li>
+</ul>
+
+<h4>Title (I.e. biblio record)</h4>
+
+<ul>
+<li>Good: Title</li>
+<li>Best: Biblionumber / Biblio URL</li>
+</ul>
+
+<h3>How often does this problem occur?</h3>
+
+<ul>
+<li>Are there issues every time you try? </li>
+<li>If the problem is intermittent, How often Does it occur on  average: Once per hour? Once per day?</li>
+</ul>
+
+<h3>Describe, step by step, how to replicate the problem.</h3>
+
+<ul>
+<li>Be as detailed as possible. </li>
+</ul>
+
+<h3>What Web browser are you using?</h3>
+
+<ul>
+<li>Brand: Microsoft Internet Explorer, Mozilla Firefox, Google Chrome</li>
+<li>Version: Go to the help menu, choose 'about' and paste the version number into the ticket.</li>
+</ul>
+
+<h3>Is the issue browser specific (e.g. does the issue occur in Chrome but not Firefox, or vise versa)?</h3>
+
+<h3>Are ther logs available?</h3>
+
+<ul>
+<li>There are several system preferences which enable loggging. Make sure that logging is enabled for whichever system you are having issues with.</li>
+<li>When the problem re-occurs, Go to Tools > Log Viewer. </li>
+<li>Put item number in the 'Object' text box</li>
+<li>Narrow the date range. </li>
+<li>Click 'submit' to search the logs. </li>
+<li>Paste the results into the trouble ticket.</li>
+</ul>
+
+<h3>Have you cleared the browser cache?</h3>
+
+<p>Certain javascript heavy pages, such as circulation, can save information for re-use. Under certain circumstances, this information can get out of date, causing unpredictable behaviour. Try clearing the browser cache.</p>
+
+<ul>
+<li>firefox:  <a href="https://support.mozilla.org/en-US/kb/how-clear-firefox-cache#w\_clear-the-cache">https://support.mozilla.org/en-US/kb/how-clear-firefox-cache#w\_clear-the-cache</a></li>
+<li>chrome:  <a href="https://support.google.com/chrome/answer/95582?hl=en">https://support.google.com/chrome/answer/95582?hl=en</a></li>
+</ul>
+
+<h3>Can you capture the problem in a screencast? See <a href="http://bywatersolutions.com/2011/12/14/screencasts-for-koha-bugticket-reporting/">http://bywatersolutions.com/2011/12/14/screencasts-for-koha-bugticket-reporting/</a></h3>
+
+<h2>Examples:</h2>
+
+<h3>Subject:</h3>
+
+<h4>Bad:</h4>
+
+<ul>
+<li>It's broken</li>
+<li>Error Message</li>
+<li>It won't print</li>
+</ul>
+
+<h4>Better:</h4>
+
+<ul>
+<li>Error Message in catalog search for 'Harry Potter'</li>
+<li>Problem printing quick slip on checkout.</li>
+</ul>
+
+<h4>Best:</h4>
+
+<ul>
+<li>staff client mainpage.pl catalog search for 'Harry Potter' causes '404 Page Not Found'</li>
+<li>Circulation: title does not print on quick slip, checking out barcode E12073366</li>
+</ul>
+
+<h3>Description:</h3>
+
+<h4>Bad:</h4>
+
+<ul>
+<li>When I was checking out an item, the slip messed up.</li>
+</ul>
+
+<h4>Better:</h4>
+
+<ul>
+<li>When I was checking out 'Harry Potter', the title did not print on the quick slip
+<ul>
+<li>This would be a reasonable subject line, but lacks detail.</li>
+</ul></li>
+</ul>
+
+<h4>Best:</h4>
+
+<ul>
+<li>Steps to re-create the problem:
+<ol>
+<li>Start at Home > Circulation > Checkouts (http://intranet.bywatersolutions.com/cgi-bin/koha/circ/circulation.pl)</li>
+<li>Enter Card Number for patron 'Pikov Andropov', card number 443 in search bar with 'Check Out' enabled.</li>
+<li>Scan Barcode 'E12107351' (title: Practical open source software for libraries /)</li>
+<li>Check 'Cancel hold' check box then clicked 'Yes, Check Out (Y)'</li>
+<li>Click 'Print' button, selected 'Print Quick Slip'</li>
+<li>At this point, I expect to see all of the information about 'Practical open source software for libraries' printed on the slip -- the barcode and due date do print, but the title does not.</li>
+</ol></li>
+<li>I took a picture with my cell phone of the slip as it printed -- I'm pointing to the place where the title should appear. The jpeg is attached to this email.</li>
+</ul>
+
+<p>Future blog posts will detail information to include for specific types of problems.</p>

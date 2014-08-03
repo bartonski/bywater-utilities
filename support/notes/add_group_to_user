@@ -1,0 +1,2 @@
+Add group 'sudo' to user 'tony'
+# usermod -a -G sudo tony

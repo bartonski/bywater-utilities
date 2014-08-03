@@ -1,0 +1,28 @@
+Marc/Index name mapping
+File: /etc/koha/zebradb/marc_defs/marc21/biblios/record.abs 
+Note: First matching tag is picked in record.abs; rules for subfields should be listed first.
+Example Line:
+    melm 596$a      Note596a:w
+    ==========================
+Fields:
+| MARC Field Name| index name |
+| 596$a          | Note596a:w |
+
+Step 3 Set up bib-1 (aka Z39.50) attributes.
+
+Z39.50 Attribute/Index name mapping
+File: /etc/koha/zebradb/biblios/etc/bib1.att
+Example Line:
+    att 65 Note596a
+    ===============
+Fields: 
+| Z39.50 attribute | index name | Shortname(s) |
+| att 65           | Note596a   |              |
+
+File: /etc/koha/zebradb/ccl.properties
+does the same, with different syntax:
+Example Line:
+    Note596a 1=65
+    =============
+
+
