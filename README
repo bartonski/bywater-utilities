@@ -1,0 +1,31 @@
+The environment variable $EMPLOYER_PATH should be exported in 
+
+The file .bywater is meant to be sourced at shell startup,
+
+The environment variable $EMPLOYER_PATH should be set to the install directory.
+Assuming that the install directory is $HOME/Employer/, the following lines may
+be added to .bashrc:
+
+export EMPLOYER="bywater"
+export EMPLOYER_PATH="$HOME/Employer/${EMPLOYER}"
+export EMPLOYER_RC="${EMPLOYER_PATH}/.${EMPLOYER}"
+
+## If annon is down, uncomment the following line to enable 'assh' and 'sassh' functions.
+#export BYWATER_GATEWAY='echor'
+
+employerrc() {
+    $EDITOR $EMPLOYER_RC
+    source $EMPLOYER_RC
+}
+
+
+if [ ! -d ${EMPLOYER_PATH} ]
+then
+    mkdir -p ${EMPLOYER_PATH}
+fi
+
+if [ -f $EMPLOYER_RC ]
+then
+    source $EMPLOYER_RC
+fi
+

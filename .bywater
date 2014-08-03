@@ -1,0 +1,80 @@
+# Exported Variables
+export RTUSER="${USER}@bywatersolutions.com"
+export RTSERVER=http://ticket.bywatersolutions.com/
+
+if [ ! -z $EMPLOYER_PATH ]
+then
+    export PATH="$PATH:${EMPLOYER_PATH/bin}"
+fi
+
+# If annon is down, export BYWATER_GATEWAY='echor' in the calling script.
+if [ -z $BYWATER_GATEWAY ]
+then
+    export BYWATER_GATEWAY='annon'
+fi
+
+# Shell Functions
+ticket() { xdg-open http://ticket.bywatersolutions.com/Ticket/Display.html?id=${1}; sleep 1; echo; }
+
+bug() { xdg-open http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=${1}; sleep 1; echo; }
+
+assh() { ssh -t $BYWATER_GATEWAY ssh "$@"; }
+
+sassh() { ssh  $BYWATER_GATEWAY ssh "$@"; } # 'straight' assh.
+
+mksupport() { mkdir -p $SUPPORT/$1/files; }
+
+append_shortname() {
+    local shortname="$1"
+    local template="$2"
+    local linkfile="$3"
+    echo "$template" | sed "s/xxx/$shortname/g" >> $linkfile
+}
+
+sugar() 
+{
+    local shortname=$1
+    local linkfile=$HOME/Support/notes/ticketlinks.txt
+    if grep -q $shortname $linkfile
+    then
+        grep $shortname $linkfile | cut -d: -f 2-
+    else
+        if [ ! -x $DISPLAY ]
+        then
+            xdg-open "http://sugarcrm.bywatersolutions.com/"\
+                     "index.php?action=UnifiedSearch&module="\
+                     "Home&search_form=false&advanced="\
+                     "false&query_string=$shortname"
+        fi
+        append_shortname $shortname 'xxx: xxx:' $linkfile
+        append_shortname $shortname 'xxx: Sugar URL: ' $linkfile
+        append_shortname $shortname 'xxx: Staff: ' $linkfile
+        append_shortname $shortname 'xxx: Opac: ' $linkfile
+        vim + $linkfile
+        grep $shortname $linkfile | cut -d: -f 2-
+    fi
+}
+
+tt() #tablify tickets
+{
+    $HOME/bin/tablify_tickets.pl > $HOME/public_html/ticket-table.html
+    xdg-open $HOME/public_html/ticket-table.html
+}
+
+lastmarkdown() {
+    ls -1t  "$HOME/Documents/markdown/todo"$(yesterdts)* | tail -1
+}
+
+selectmarkdown () {
+    sed '1,/# Today/d; /<table>/,$d'  $(lastmarkdown) | xsel
+}
+
+# 2014-02-07 -- Barton Chittenden -- http://ticket.bywatersolutions.com/Ticket/Display.html?id=18204
+croncomment () {
+    echo "# $(date +%Y-%m-%d) -- $USER@bywatersolutions.com -- http://ticket.bywatersolutions.com/Ticket/Display.html?id=$1"
+}
+
+md() { 
+    local base="$(basename $1 '.markdown')"
+    pandoc -f markdown $1 > ${base}.html
+}

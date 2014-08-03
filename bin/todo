@@ -1,0 +1,190 @@
+#! /bin/bash
+
+## Barton's todo-list maker -- generate an html to-do list from specifically formatted RT reports.
+# requires 'markdown', can install using  
+# sudo apt-get install markdown.
+#
+# Settable environment variables:
+#
+# Currently none, but plan to use
+#  MARKDOWN_PATH -- Path for temp files and markdown files.
+#  SUPPORT_DASHBOARD_URL -- Url contining RT dashboard displaying 
+#                           the following reports: 
+#                           * 'My reminders'
+#                           * 'My high priority tickets'
+#                           * 'Barton's Stale Tickets'
+#                           * 'My open tickets updated by someone else'
+#  OPEN_TICKETS_URL -- Url of 'Open Tickets' dashboard.
+
+dts() { date +%Y%m%d_%H.%M.%S; }
+TODAY="Today: $( date +'%Y-%m-%d')"
+# TODO: test for existence of directory set in $MARKDOWN_PATH,
+#       create it if it does not exist.
+MARKDOWN_PATH="$HOME/Documents/markdown"
+# TODO: Might want to create '$MARKDOWN_COMMAND' variable, 
+#       which could take 'markdown', 'pandoc' or
+#       other markdown program.
+BASENAME='todo' 
+PREFORMAT_FILE="$MARKDOWN_PATH/${BASENAME}$(dts).preformat"
+MARKDOWN_FILE="$MARKDOWN_PATH/${BASENAME}$(dts).markdown"
+EDIT_FILE="$MARKDOWN_PATH/edit$(dts).txt"
+ITEM_FILE="$MARKDOWN_PATH/items$(dts).txt"
+HTML_FILE="$MARKDOWN_PATH/${BASENAME}$(dts).html"
+PUBLIC_HTML_FILE="${BASENAME}.html"
+SUPPORT_DASHBOARD_URL="http://ticket.bywatersolutions.com/Dashboards/881/Barton%20Support%20Dashboard"
+OPEN_TICKETS_URL="http://ticket.bywatersolutions.com/Search/Results.html?Format=%27%3Ca%20href%3D%22%2FTicket%2FDisplay.html%3Fid%3D__id__%22%3E__id__%3C%2Fa%3E%2FTITLE%3A%23%27%2C%0A%27%3Ca%20href%3D%22%2FTicket%2FDisplay.html%3Fid%3D__id__%22%3E__Subject__%3C%2Fa%3E%2FTITLE%3ASubject%27%2C%0A%27__Priority__%27%2C%0A%27__QueueName__%27%2C%0A%27__ExtendedStatus__%27&Order=DESC%7CASC%7CASC%7CASC&OrderBy=Priority%7C%7C%7C&Query=Owner%20%3D%20%27__CurrentUser__%27%20AND%20(%20%20Status%20%3D%20%27new%27%20OR%20Status%20%3D%20%27needsinfo%27%20OR%20Status%20%3D%20%27open%27%20)&RowsPerPage=100"
+BIN="$(dirname $0)"
+
+open_in_browser() {
+    if [ ! -z $DISPLAY ]; then 
+        xdg-open "${1}"
+        sleep 2
+        echo "${1}"
+    else
+        echo "Open ${1} in your web browser."
+    fi
+}
+
+if [ ! -d $MARKDOWN_PATH ]
+then
+    mkdir -p $MARKDOWN_PATH
+fi
+
+open_in_browser "${SUPPORT_DASHBOARD_URL}"
+echo "Paste tickets from Support Dashboard ${SUPPORT_DASHBOARD_URL} here, the press <Control+d>"
+cat > $ITEM_FILE
+
+open_in_browser "${OPEN_TICKETS_URL}"
+echo "Paste tickets from 'Open Tickets' report here, the press <Control+d>"
+echo "## Other Tickets" >> $ITEM_FILE
+cat >> $ITEM_FILE
+
+## Make the following changes:
+# Remove initial hash characters, except when doubled.
+# For any line containing 'copy Edit' or 'Edit', remove those words and insert a leading '##' on the line.
+# Remove the end of the line for any line containig a priority followed by the queue names 'Support' or 'Migrations'.
+# Add a semi-colon after the ticket number
+# Change colons to semi-colons
+# Escape underscores with back-slashes.
+format_raw ()  {
+    local items="${1}"
+echo "in 'format_raw(), \$items is '$items''"
+set -x
+    sed -i '/^#[^#]/d' $items                   ## Strip comment lines.
+    sed -i 's/copy Edit/Edit/' $items           ## Normalize report headers
+    sed -i 's/\(.*[^\\]\)Edit/\n## \1/' $items  ## don't remove the newline here -- it's literal text.
+    sed -i 's/\\([Ee]dit)/\t/' $items           ## Un-escape '\Edit'.
+    chopline='s/[[:space:]]\+\+[0-9]\+[[:space:]]\+\(Support\|Migrations\).*//'
+    add_semicolons='s|^\([[:digit:]]\+\)|\1;|'
+    change_colons='s/:/;/g'
+    escape_underscores='s/_/\\_/'
+    sed -i "$chopline; $add_semicolons; $change_colons; $escape_underscores" $items
+set +x
+}
+
+preformat() {
+    local infile=$1
+    local outfile=$2
+    urlify='s|^\([[:digit:]]\+\)|<a href="http://ticket.bywatersolutions.com/Ticket/Display.html?id=\1">\1</a>|g'
+    sed "$urlify" $1 > $outfile
+    perl -i $BIN/semicolon_to_table.pl $outfile
+}
+
+# TODO: turn ticket numbers into ticket URLs.
+#sed -i 's/ \+[0-9]\+[[:space:]]\+Support.*//; s/^/* /; s/_/\\_/' $ITEM_FILE
+format_raw $ITEM_FILE
+
+cat $ITEM_FILE >> $EDIT_FILE
+
+printf '
+
+ 8:00    ;
+ 8:30    ;
+ 9:00    ;
+ 9:30    ;
+ 10:00   ;
+ 10:30   ;
+ 11:00   ;
+ 11:30   ;
+ 12:00   ; LUNCH 
+ 12:30   ; LUNCH 
+ 13:00   ; Regroup 
+ 13:30   ;
+ 14:00   ;
+ 14:30   ;
+ 15:00   ;
+ 15:30   ;
+ 16:00   ;
+ 16:30   ;
+ 17:00   ;
+ 17:30   ;
+ 18:00   ;
+ 18:30   ;
+ 19:00   ;
+ 19:30   ;' >> $EDIT_FILE 
+
+## The following vim macros will be of great assistance when editing
+# Macro 'a': Append text of RT reminder to the end of the corresponding ticket line, then delete the reminder.
+# The literal text of the macro is after the macro call
+# @a:/#./eyy*pkA -- Jf	d$''dd
+# The macro is called by typing '@a' ... everything after ':' is the literal macro.
+
+# Macro 't': 
+#  * Set mark 'a' at the current line.
+#  * Go to the next matching ticket number
+#  * Delete the current line
+#  * Search back for the previous header
+#  * Copy the header
+#  * Go back to mark 'a'
+#  * Paste the header.
+# @t:ma*dd?^##yy'apk
+
+# Macro 'h'
+#  * Go up one line
+#  * Join current line with the line we came from
+#  * Search for previous line starting with '--'
+# @h:kJ?^--
+
+$EDITOR $EDIT_FILE
+
+preformat $EDIT_FILE $PREFORMAT_FILE
+
+echo ""
+echo "Edit file: $EDIT_FILE"
+
+cat > $MARKDOWN_FILE << MD
+<style>
+table
+{
+border-collapse:collapse;
+}
+table,th, td
+{
+border: 1px solid black;
+}
+</style>
+
+# $TODAY
+
+MD
+
+cat $PREFORMAT_FILE >> $MARKDOWN_FILE
+
+markdown $MARKDOWN_FILE > $HTML_FILE
+
+echo "Html file: $HTML_FILE"
+
+
+if [ ! -d $HOME/public_html/todo_files ]
+then
+    mkdir -p $HOME/public_html/todo_files
+fi
+ln -f -s $HTML_FILE $HOME/public_html/$PUBLIC_HTML_FILE
+ln -f -s $MARKDOWN_PATH/*.html $HOME/public_html/todo_files/
+
+if [ ! -z $DISPLAY ]; then 
+    xdg-open http://localhost/~${USER}/$PUBLIC_HTML_FILE
+    sleep 2
+    echo "Opened http://localhost/~${USER}/$PUBLIC_HTML_FILE"
+fi
+

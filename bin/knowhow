@@ -1,0 +1,43 @@
+#! /bin/bash
+
+# TODO: BASE should be pulled from $0
+BASE="knowhow"
+MARKDOWN_PATH="$HOME/Support/notes/markdown"
+MARKDOWN_FILE="$MARKDOWN_PATH/${BASE}.markdown"
+HTML_FILE="$MARKDOWN_PATH/${BASE}.html"
+
+if [ ! -d $MARKDOWN_PATH ]
+then
+    mkdir -p $MARKDOWN_PATH
+fi
+
+if [ ! -f $MARKDOWN_FILE ]
+then
+
+# TODO: this should be written off to a separate css file.
+cat > $MARKDOWN_FILE << MD
+<style>
+table
+{
+border-collapse:collapse;
+}
+table,th, td
+{
+border: 1px solid black;
+}
+</style>
+MD
+
+fi
+
+vim $MARKDOWN_FILE
+markdown $MARKDOWN_FILE > $HTML_FILE
+ln -f -s $HTML_FILE $HOME/public_html/${BASE}.html
+
+if [ ! -z "$DISPLAY" ]
+then
+    xdg-open http://localhost/~${USER}/${BASE}.html
+    sleep 2
+fi
+
+echo
