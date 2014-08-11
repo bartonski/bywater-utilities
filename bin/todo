@@ -139,6 +139,22 @@ printf '
 #  * Paste the header.
 # @t:ma*dd?^##yy'apk
 
+# Macro 'z'
+# * Go to bottom of file
+# * Search upwards for '^## Other Tickets'
+# * Go up 1 line.
+# * Delete all lines from the top to the current line, contining the string
+#   '^## Other Tickets'
+# * Search upwards for '## My open tickets updated by someone else'
+# * Go up 1 line.
+# * Change all lines from beginning to the current line:
+#   s/s/## My open tickets updated by someone else/-- Needs Follow up./
+# * Search upwards for '## Barton's Stale Tickets'
+# * Go up 1 line.
+# * Change all lines from beginning to the current line:
+#   s/## Barton's Stale Tickets/-- Stale/
+# @z:G?^## Other Ticketsk:1,.g/## Other Tickets/d?## My open tickets updated by someone elsek:1,$€kb.s/## My open tickets updated by someone else/-- Needs Follow €kb€kb€kb€kb€kb€kb€kbfollow up./?^##k:1,.s/## Barton's Stale Tickets/-- Stale/g
+
 # Macro 'h'
 #  * Go up one line
 #  * Join current line with the line we came from
