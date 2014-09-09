@@ -1,6 +1,7 @@
 # Exported Variables
 export RTUSER="${USER}@bywatersolutions.com"
-export RTSERVER=http://ticket.bywatersolutions.com/
+export RTSERVER=http://ticket.bywatersolutions.com/ # Note trailing slash
+export BUGZILLA=bugs.koha-community.org
 
 if [ ! -z $EMPLOYER_PATH ]
 then
@@ -14,9 +15,9 @@ then
 fi
 
 # Shell Functions
-ticket() { xdg-open http://ticket.bywatersolutions.com/Ticket/Display.html?id=${1}; sleep 1; echo; }
+ticket() { xdg-open http://${RTSERVER}Ticket/Display.html?id=${1}; sleep 1; echo; }
 
-bug() { xdg-open http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=${1}; sleep 1; echo; }
+bug() { xdg-open http://${BUGZILLA}/bugzilla3/show_bug.cgi?id=${1}; sleep 1; echo; }
 
 assh() { ssh -t $BYWATER_GATEWAY ssh "$@"; }
 
@@ -31,6 +32,7 @@ append_shortname() {
     echo "$template" | sed "s/xxx/$shortname/g" >> $linkfile
 }
 
+# TODO: put this in a shell script of its own.
 sugar() 
 {
     local shortname=$1
@@ -55,6 +57,30 @@ sugar()
     fi
 }
 
+kohaurl () {
+    set -x 
+    local linkfile=$HOME/Support/notes/ticketlinks.txt
+    if grep "^${1}\>" $linkfile 2>&1 > /dev/null
+    then
+        staffclient="$(grep ^${1}: $linkfile | grep Staff | cut -d ':' -f 3- | sed 's|/$||')"
+        url="${staffclient}/${2}"
+        echo $url
+        xdg-open $url
+    fi
+    set +x
+}
+
+kohaversion() {
+    kohaurl "$1" "cgi-bin/koha/about.pl"
+}
+
+kohaletter() {
+    kohaurl "$1" "cgi-bin/koha/tools/letter.pl"
+}
+
+kohaconf() {
+    kohaurl "$1" "cgi-bin/koha/admin/admin-home.pl"
+}
 tt() #tablify tickets
 {
     $HOME/bin/tablify_tickets.pl > $HOME/public_html/ticket-table.html
@@ -78,3 +104,9 @@ md() {
     local base="$(basename $1 '.markdown')"
     pandoc -f markdown $1 > ${base}.html
 }
+
+grepks () 
+{ 
+    egrep --color=auto -i "^(CREATE TABLE|[)])|$1" /data/barton/Support/git/koha/installer/data/mysql/kohastructure.sql | grep --color=auto -i --color=auto -B1 "$1"
+}
+
