@@ -220,25 +220,7 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
     );
 }
 
-print "\n";
-
-#    a.my_description, 
-#    CASE 
-#        WHEN a.correct_timeformat=1 THEN a.description 
-#        ELSE b.description 
-#    END as description, 
-#    a.correct_timeformat as first_is_good, 
-#    a.accounttype as first_accounttype,
-#    a.amount as first_amount,
-#    a.amount_paid as first_amount_paid,
-#    b.accountlines_id as accountlines_id, 
-#    b.date as date,
-#    b.accounttype as second_accounttype,
-#    b.lastincrement as lastincrement,
-#    b.amount as second_amount,
-#    b.amount_paid as second_amount_paid
-
-print "Creating list of data to keep\n";
+print "\nCreating list of data to keep\n";
 
 $data_to_keep_sth->execute();
 my %data_to_keep;
