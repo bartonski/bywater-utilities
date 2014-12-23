@@ -162,57 +162,6 @@ sub log_warn {
     $global_csv->print ( $global_report_fh, $logdata );
 }
 
-sub log_and_commit {
-    my (
-          $commit_sth 
-        , $accountlines_sth 
-        , $statement_arguments # arrayref, with accountlines_id as the last element.
-        , $message 
-    ) = @_;
-
-    my @arguments = ( @$statement_arguments );
-    my $accountlines_id = $arguments[ -1 ];
-    # Log to csv file.
-    $accountlines_sth->execute( $accountlines_id );
-    while( my $accountline = $accountlines_sth->fetchrow_hashref ) {
-        my $columns = [
-              $message
-            , ( %$accountline )
-        ];
-        $global_csv->print ( $global_report_fh );
-    } 
-
-    # Run query if $opt_do_eet is true.
-    if( $opt_do_eet ) {
-        $commit_sth->execute( @arguments );
-    }
-}
-
-sub log_and_insert {
-    my (
-          $insert_sth 
-        , $statement_arguments # arrayref, with accountlines_id as the last element.
-        , $message 
-    ) = @_;
-
-    my @arguments = ( @$statement_arguments );
-    # Log to csv file.
-    # $accountlines_sth->execute( $arguments[ -1 ] );
-    # while( my $accountline = $accountlines_sth->fetchrow_hashref ) {
-        # my $columns = [
-              # $message
-            # , ( %$accountline )
-        # ];
-        # $global_csv->print ( $global_report_fh );
-    # } 
-
-    # Run query if $opt_do_eet is true.
-    if( $opt_do_eet ) {
-        $insert_sth->execute( @arguments );
-    }
-}
-
-
 ############################ Create temp table ###############################
 
 print "Creating temp table '$temp_table_name'\n";
@@ -364,26 +313,9 @@ BADFINES: while( my $bad_fine = $bad_fine_sth->fetchrow_hashref() ) {
 
         # After we've found $data_to_keep, we can simply do an update on the newer record, and delete the old.
 
-#        log_and_commit( $delete_accountline_sth, 
-#                        $select_accountline_sth, 
-#                        [ $bad_fine->{accountlines_id} ],  
-#                        $bad_fine,
-#                        "Deleting duplicate fine '$bad_fine->{accountlines_id}'"
-#                      );
     } else {
         # Only the bad fine exists. Fix the description and move on.
-        # '$select_accountline_sth' has been removed -- need to fix this logic accordingly.
-        # '$fix_accountline_description_sth' has also been removed.
-        log_and_commit( $fix_accountline_description_sth,
-                        $select_accountline_sth, 
-                        [ $bad_fine->{accountlines_id} ],  
-                        $bad_fine,
-                        "fixing description. "
-                        . "from: $time_due_fixme "
-                        . "to: $time_due_correct '$bad_fine->{accountlines_id}'"
-                      );
 
-        rename_accountline( $bad_fine->{accountlines_id} );
         next BADFINES;
     }
 
