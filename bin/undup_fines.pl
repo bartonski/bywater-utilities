@@ -157,24 +157,6 @@ my $delete_accountline_sth = $global_dbh->prepare(
 WHERE accountlines_id = ?"
 );
 
-# Replace bad time_due with correct time_due, 
-# but only at the end of the description.
-my $fix_accountline_description_sth = $global_dbh->prepare(
-"UPDATE accountlines
-SET description = CONCAT(
-        substring( description, 1, char_length(description) 
-                   - char_length('$time_due_fixme') 
-                 ),
-        '$time_due_correct' 
-    )
-WHERE accountlines_id = ?"
-);
-
-my $update_amount_outstanding_sth = $global_dbh->prepare(
-"UPDATE accountlines
-SET amount_outstanding=?
-WHERE accountlines_id=?");
-
 sub log_warn {
     my $logdata = [ "Warning", @_ ];
     $global_csv->print ( $global_report_fh, $logdata );
@@ -391,6 +373,7 @@ BADFINES: while( my $bad_fine = $bad_fine_sth->fetchrow_hashref() ) {
     } else {
         # Only the bad fine exists. Fix the description and move on.
         # '$select_accountline_sth' has been removed -- need to fix this logic accordingly.
+        # '$fix_accountline_description_sth' has also been removed.
         log_and_commit( $fix_accountline_description_sth,
                         $select_accountline_sth, 
                         [ $bad_fine->{accountlines_id} ],  
