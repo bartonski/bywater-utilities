@@ -431,8 +431,8 @@ BADFINES: while( my $bad_fine = $bad_fine_sth->fetchrow_hashref() ) {
                         [ $bad_fine->{accountlines_id} ],  
                         $bad_fine,
                         "fixing description. "
-                        . "old: $time_due_fixme "
-                        . "new: $time_due_correct '$bad_fine->{accountlines_id}'"
+                        . "from: $time_due_fixme "
+                        . "to: $time_due_correct '$bad_fine->{accountlines_id}'"
                       );
 
         rename_accountline( $bad_fine->{accountlines_id} );
