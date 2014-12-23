@@ -152,12 +152,6 @@ from
 where a.date < b.date"
 );
 
-my $select_accountline_sth = $global_dbh->prepare(
-"SELECT *
-FROM accountlines
-WHERE accountlines_id = ?"
-);
-
 my $delete_accountline_sth = $global_dbh->prepare(
 "DELETE FROM accountlines
 WHERE accountlines_id = ?"
@@ -236,29 +230,6 @@ sub log_and_insert {
     }
 }
 
-
-sub update_amount_outstanding {
-    my (
-          $record
-        , $amount
-    ) = @_;
-
-    my $accountlines_id = $record->{accountlines_id};
-    my $amount_outstanding = $amount < 0 ? 0        : $amount;
-    my $credit             = $amount < 0 ? -$amount : undef;
-
-    log_and_commit ( $update_amount_outstanding_sth ,
-                     $select_accountline_sth, 
-                     [ $amount_outstanding, $record->{accountlines_id} ],  
-                     "Adjusting amount_outstanding for "
-                     . "'$record->{accountlines_id}' to "
-                     . "'$amount_outstanding'"
-                   );
-    
-    if( $credit ) {
-        # TODO: write warning about credit being owed.
-    }
-}
 
 ############################ Create temp table ###############################
 
@@ -419,6 +390,7 @@ BADFINES: while( my $bad_fine = $bad_fine_sth->fetchrow_hashref() ) {
 #                      );
     } else {
         # Only the bad fine exists. Fix the description and move on.
+        # '$select_accountline_sth' has been removed -- need to fix this logic accordingly.
         log_and_commit( $fix_accountline_description_sth,
                         $select_accountline_sth, 
                         [ $bad_fine->{accountlines_id} ],  
