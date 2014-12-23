@@ -239,6 +239,8 @@ KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
         $amountoutstanding = 0;
     };
 
+    # TODO: IMPORTANT -- Make sure that 'my_description' uniquely identifies records at this point
+    #                    or create a new key.
     $data_to_keep{ $keep->{my_description} } = {
         accountlines_id => $keep->{accountlines_id}
         , accounttype => $keep->{first_accounttype} eq 'FU' ? $keep->{second_accounttype} : $keep->{first_accounttype}
