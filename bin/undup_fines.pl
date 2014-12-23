@@ -43,8 +43,32 @@ my $temp_table_drop   = "DROP TABLE IF EXISTS $temp_table_name;";
 
 print "Creating temp table '$temp_table_name'";
 
+# Note that my_description must be varchar() in order to be part of the
+# index, and reuires a maximum length.  used  the following query to find
+#
+# select LENGTH(description) from accountlines order by LENGTH(description) DESC limit 1;
+# +---------------------+
+# | LENGTH(description) |
+# +---------------------+
+# |                 276 |
+# +---------------------+
+# 1 row in set (0.99 sec)
+#
+# There is a possible race condition if a longer description is added between
+# the time of the table creation and the time that we populate all of the
+# values in the temp table, but I think that the risk is negligable as long
+# as the script is run at a time when fines are not actively being calculated,
+# e.g. heavy circ times or during the run of fines.pl.
+
 if( $opt_new_table ) {
     $global_dbh->do( $temp_table_drop );
+
+    my $description_sth = $global_dbh->prepare(
+        "select LENGTH(description) from accountlines order by LENGTH(description) DESC limit 1;"
+    );
+    $description_sth->execute();
+    my $description = $description_sth->fetchrow_hashref();
+
     $global_dbh->do( 
 "CREATE TABLE $temp_table_name (
     id                    int         NOT NULL         AUTO_INCREMENT PRIMARY KEY,
@@ -53,7 +77,7 @@ if( $opt_new_table ) {
     accountno             smallint(6) NOT NULL,
     itemnumber            int(11),
     description           mediumtext,
-    my_description        varchar(276) NOT NULL,
+    my_description        varchar($description->{length}) NOT NULL,
     timestamp             timestamp,
     date                  date,
     amount                decimal(28,6),
@@ -67,19 +91,6 @@ if( $opt_new_table ) {
     );
 }
 
-# Note that my_description must be varchar() in order to be part of the
-# index, and reuires a maximum length.  used  the following query to find
-# maximum length -- best bet would be to calculate this dynamically. That
-# still produces a possible race condiiton (longer descriptions may be
-# added on the fly.)
-#
-# select LENGTH(description) from accountlines order by LENGTH(description) DESC limit 1;
-# +---------------------+
-# | LENGTH(description) |
-# +---------------------+
-# |                 276 |
-# +---------------------+
-# 1 row in set (0.99 sec)
 my $find_max_description_length_sth = $global_dbh->prepare(
 "select 
         LENGTH(description) 
@@ -199,8 +210,9 @@ sub log_and_commit {
     ) = @_;
 
     my @arguments = ( @$statement_arguments );
+    my $accountlines_id = $arguments[ -1 ];
     # Log to csv file.
-    $accountlines_sth->execute( $arguments[ -1 ] );
+    $accountlines_sth->execute( $accountlines_id );
     while( my $accountline = $accountlines_sth->fetchrow_hashref ) {
         my $columns = [
               $message
