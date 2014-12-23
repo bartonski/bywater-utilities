@@ -130,13 +130,6 @@ FROM $temp_table_name
 WHERE correct_timeformat = 0"
 );
 
-my $good_fine_sth = $global_dbh->prepare(
-"SELECT * 
-FROM $temp_table_name
-WHERE correct_timeformat != 0
-AND my_description = ?"
-);
-
 my $data_to_keep_sth = $global_dbh->prepare(
 "select 
     a.my_description, 
@@ -441,28 +434,6 @@ BADFINES: while( my $bad_fine = $bad_fine_sth->fetchrow_hashref() ) {
 
     next BADFINES if ( $bad_fine->{amount_paid} == 0 );
 
-    $good_fine_sth->execute( $bad_fine->{my_description} );
-    my @good_accountlines_id = ();
-    my $good_fine;
-    GOODFINES: while ( $good_fine = $good_fine_sth->fetchrow_hashref() ) {
-        push @good_accountlines_id, $good_fine->{accountlines_id};
-    }
-    
-    if( scalar @good_accountlines_id > 1 ) {
-        # This *shouldn't* happen.
-        print   "WARNING: '$good_fine->{my_description}' "
-              . "occurs more than once "
-              . "-- see the rows having the following  accountlines_ids: "
-              . join (', ', @good_accountlines_id)
-              . "\n" ;
-        next BADFINES; # We don't know which "good" fine we want to adjust, so skip.
-    }
-    
-    my $new_amount_outstanding = $good_fine->{amount_outstanding} - $bad_fine->{amount_paid};
-
-    # update_amount_outstanding() will also create credit
-    # if $new_amount_outstanding is less than 0. 
-    update_amount_outstanding( $good_fine, $new_amount_outstanding );
 }
 
 END {
