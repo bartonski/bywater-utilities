@@ -91,14 +91,6 @@ if( $opt_new_table ) {
     );
 }
 
-my $find_max_description_length_sth = $global_dbh->prepare(
-"select 
-        LENGTH(description) 
-from accountlines 
-order by LENGTH(description) DESC limit 1;"
-);
-
-
 my $fines_sth = $global_dbh->prepare(
 "SELECT *
 FROM accountlines
