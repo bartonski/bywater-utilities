@@ -25,7 +25,7 @@ GetOptions (
 
 pod2usage(1) and exit if $opt_help;
 
-my $global_csv = Text::CSV_XS->new ({ binary => 1 })
+my $global_csv = Text::CSV_XS->new ({ binary => 1, eol => "\n" })
     or die "Cannot use CSV: " . Text::CSV->error_diag ();
 
 my $global_report_fh;
@@ -70,7 +70,7 @@ if( $opt_new_table ) {
 # Note that my_description must be varchar() in order to be part of the
 # index, and reuires a maximum length.  used  the following query to find
 # maximum length -- best bet would be to calculate this dynamically. That
-# still produces a possible rae condiiton (longer descriptions may be
+# still produces a possible race condiiton (longer descriptions may be
 # added on the fly.)
 #
 # select LENGTH(description) from accountlines order by LENGTH(description) DESC limit 1;
@@ -80,6 +80,12 @@ if( $opt_new_table ) {
 # |                 276 |
 # +---------------------+
 # 1 row in set (0.99 sec)
+my $find_max_description_length_sth = $global_dbh->prepare(
+"select 
+        LENGTH(description) 
+from accountlines 
+order by LENGTH(description) DESC limit 1;"
+);
 
 
 my $fines_sth = $global_dbh->prepare(
@@ -118,14 +124,37 @@ WHERE my_description = ?"
 my $bad_fine_sth = $global_dbh->prepare(
 "SELECT * 
 FROM $temp_table_name
-WHERE correct_timeformat = 0");
+WHERE correct_timeformat = 0"
+);
 
 my $good_fine_sth = $global_dbh->prepare(
 "SELECT * 
 FROM $temp_table_name
 WHERE correct_timeformat != 0
-AND my_description = ?");
+AND my_description = ?"
+);
 
+my $data_to_keep_sth = $global_dbh->prepare(
+"select 
+    a.my_description, 
+    CASE 
+        WHEN a.correct_timeformat=1 THEN a.description 
+        ELSE b.description 
+    END as description, 
+    a.correct_timeformat as first_is_good, 
+    a.accounttype as first_accounttype,
+    a.amount_paid as first_amount_paid,
+    b.accountlines_id as accountlines_id, 
+    b.date as date,
+    b.accounttype as second_accounttype,
+    b.lastincrement as lastincrement,
+    b.amount as amount,
+    b.amount_paid as second_amount_paid
+from 
+    temp_duplicate_fines a
+    inner join temp_duplicate_fines b using (borrowernumber, itemnumber, my_description) 
+where a.date < b.date"
+);
 
 my $select_accountline_sth = $global_dbh->prepare(
 "SELECT *
@@ -156,26 +185,10 @@ my $update_amount_outstanding_sth = $global_dbh->prepare(
 SET amount_outstanding=?
 WHERE accountlines_id=?");
 
-my $insert_credit_sth = $global_dbh->prepare(
-"INSERT INTO accountlines
-VALUES (
-    ?, -- borrowernumber
-    ?, -- accountno
-    ?, -- itemnumber
-    ?, -- date
-    ?, -- amount
-    ?, -- description
-    ?, -- dispute
-    ?, -- accounttype
-    ?, -- amountoutstanding
-    ?, -- lastincrement
-    ?, -- timestamp
-    ?, -- notify_id
-    ?, -- notify_level
-    ?, -- note
-    ?  -- manager_id
-)"
-);
+sub log_warn {
+    my $logdata = [ "Warning", @_ ];
+    $global_csv->print ( $global_report_fh, $logdata );
+}
 
 sub log_and_commit {
     my (
@@ -246,27 +259,13 @@ sub update_amount_outstanding {
                    );
     
     if( $credit ) {
-        my $credit_accountline_record = {
-            # TODO: accountline_record for credit here.
-        };
-        log_and_insert ( $update_amount_outstanding_sth ,
-                         [ ],  # TODO populate args for insert here.
-                         "Adding credit for duplicate fine that was paid."
-                       );
+        # TODO: write warning about credit being owed.
     }
 }
 
-# Date | Good | Amount | Action
-#   A  |   A  |    A   | X 
-#   A  |   A  |    B   | X 
-#   A  |   B  |    A   | X 
-#   A  |   B  |    B   | X 
-#   B  |   A  |    A   | X 
-#   B  |   A  |    B   | X 
-#   B  |   B  |    A   | X 
-#   B  |   B  |    B   | X 
-
 ############################ Create temp table ###############################
+
+print "Creating temp table '$temp_table_name'\n";
 
 my $i=0;
 $fines_sth->execute();
@@ -274,6 +273,32 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
     $i++;
     my $newline = ( $i % 100 ) ? "" : "\r$i";
     print ".$newline";
+
+    if    (    not defined($fine->{borrowernumber}) 
+            || not defined($fine->{my_description})
+            || not defined($fine->{itemnumber})
+          ) {
+       log_warn(   "Accountlines record is missing borrowernumber, description or itemnumber"
+                 , $fine->{accountlines_id}
+                 , $fine->{borrowernumber}
+                 , $fine->{accountno}
+                 , $fine->{itemnumber}
+                 , $fine->{date}
+                 , $fine->{amount}
+                 , $fine->{description}
+                 , $fine->{dispute}
+                 , $fine->{accounttype}
+                 , $fine->{amountoutstanding}
+                 , $fine->{lastincrement}
+                 , $fine->{timestamp}
+                 , $fine->{notify_id}
+                 , $fine->{notify_level}
+                 , $fine->{note}
+                 , $fine->{manager_id}
+               ); 
+        next FINE;
+    }
+
     my $my_description = $fine->{description};
     my $amount_paid    = $fine->{amount} - $fine->{amountoutstanding};
     my $correct_timeformat 
@@ -296,16 +321,59 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
     );
 }
 
+print "\n";
+
+#    a.my_description, 
+#    CASE 
+#        WHEN a.correct_timeformat=1 THEN a.description 
+#        ELSE b.description 
+#    END as description, 
+#    a.correct_timeformat as first_is_good, 
+#    a.accounttype as first_accounttype,
+#    a.amount as first_amount,
+#    a.amount_paid as first_amount_paid,
+#    b.accountlines_id as accountlines_id, 
+#    b.date as date,
+#    b.accounttype as second_accounttype,
+#    b.lastincrement as lastincrement,
+#    b.amount as second_amount,
+#    b.amount_paid as second_amount_paid
+
+print "Creating list of data to keep\n";
+
+$data_to_keep_sth->execute();
+my %data_to_keep;
+KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
+    my $total_paid = $keep->{first_amount_paid} + $keep->{second_amount_paid};
+    my $amount = $keep->{amount} || 0;
+    my $amountoutstanding = $amount - $total_paid;
+    if ( $amountoutstanding < 0 ) {
+        # TODO log debit needed.
+        log_warn( "Amount paid is greater than amount outstanding", 
+                  "Accountlines ID:" , $keep->{accountlines_id} ,
+                  "Total paid:"      , $total_paid              ,
+                  "Fine amount:"     , $keep->{amount}          ,
+                  "Credit:"          , -$amountoutstanding
+                );
+        $amountoutstanding = 0;
+    };
+
+    $data_to_keep{ $keep->{my_description} } = {
+        accountlines_id => $keep->{accountlines_id}
+        , accounttype => $keep->{first_accounttype} eq 'FU' ? $keep->{second_accounttype} : $keep->{first_accounttype}
+        , date => $keep->{date}
+        , lastincrement => $keep->{lastincrement}
+        , amount => $keep->{amount}
+        , amountoutstanding => $amountoutstanding
+    };
+}
+
 ## TESTING: Stop after temp table has been populated.
 
 exit 0;
 
-# TODO: I need to figure out a way to group my_description, borrowernumber
-# and itemnumber.
-
 # There should only be two rows for each description 
 # -- timeformat will be 0 or 1.
-
 # bad_fine_sth queries for fines where correct_timeformat is 0
 $bad_fine_sth->execute();
 BADFINES: while( my $bad_fine = $bad_fine_sth->fetchrow_hashref() ) {
@@ -321,13 +389,39 @@ BADFINES: while( my $bad_fine = $bad_fine_sth->fetchrow_hashref() ) {
     }
 
     if( $count == 2 ) {
-        log_and_commit( $delete_accountline_sth, 
-                        $select_accountline_sth, 
-                        [ $bad_fine->{accountlines_id} ],  
-                        $bad_fine,
-                        "Deleting duplicate fine '$bad_fine->{accountlines_id}'"
-                      );
+        # From notes in ticket:
+        #
+        # Fines *START* with accounttype 'FU' and are converted to 'F' when an item is checked in.
+        #
+        # Furthermore, it seems like we can always use the later
+        # of the the two fines for accounttype, date, lastincrement,
+        # and amount. Amount paid will have to be adjusted based on the
+        # earlier fine. Description will match the correct timeformat.
+        #
+        # I think that this is correct in everything except accounttype ...
+        # if accounttype is anything other than "FU" we will keep the
+        # "Higher" accounttype.
+
+        # Write a function to pull the following:
+        # $data_to_keep = {
+        #     accountlines_id => # the later of the two accountlines entries
+        #     accounttype     => # "FU", unless one of the records has a different entry.
+        #     date            => # The later of the two dates
+        #     lastincrement   => # Lastincrement for the later record
+        #     amount          => # Adjust amount using amount_paid from earlier record
+        #     description     => # 'GOOD' description
+        # } 
+
+        # After we've found $data_to_keep, we can simply do an update on the newer record, and delete the old.
+
+#        log_and_commit( $delete_accountline_sth, 
+#                        $select_accountline_sth, 
+#                        [ $bad_fine->{accountlines_id} ],  
+#                        $bad_fine,
+#                        "Deleting duplicate fine '$bad_fine->{accountlines_id}'"
+#                      );
     } else {
+        # Only the bad fine exists. Fix the description and move on.
         log_and_commit( $fix_accountline_description_sth,
                         $select_accountline_sth, 
                         [ $bad_fine->{accountlines_id} ],  
