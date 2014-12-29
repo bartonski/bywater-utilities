@@ -154,6 +154,18 @@ from
 where a.date <= b.date"
 );
 
+my $update_accountlines_sth = $global_dbh->prepare(
+"update accountlines
+set
+    description       = ?,
+    date              = ?,
+    accounttype       = ?,
+    lastincrement     = ?,
+    amountoutstanding = ?,
+    note              = ?
+where accountlines_id = ?"
+);
+
 my $delete_accountline_sth = $global_dbh->prepare(
 "DELETE FROM accountlines
 WHERE accountlines_id = ?"
@@ -254,7 +266,12 @@ KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
 
 ## TESTING: Stop after temp table has been populated.
 
+UPDATE_FINES: for my $key ( keys %data_to_keep ) {
+    my $accountlines_id = $data_to_keep{$key}->{accountlines_id};
+}
+
 exit 0;
+
 
 # There should only be two rows for each description 
 # -- timeformat will be 0 or 1.
