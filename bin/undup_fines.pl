@@ -161,6 +161,7 @@ set
     date              = ?,
     accounttype       = ?,
     lastincrement     = ?,
+    amount            = ?,
     amountoutstanding = ?,
     note              = ?
 where accountlines_id = ?"
@@ -266,8 +267,30 @@ KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
 
 ## TESTING: Stop after temp table has been populated.
 
+# "update accountlines
+# set
+#     description       = ?,
+#     date              = ?,
+#     accounttype       = ?,
+#     lastincrement     = ?,
+#     amountoutstanding = ?,
+#     note              = ?
+# where accountlines_id = ?"
+
+
 UPDATE_FINES: for my $key ( keys %data_to_keep ) {
     my $accountlines_id = $data_to_keep{$key}->{accountlines_id};
+    if( $opt_do_eet ) {
+        $update_accountlines_sth->execute(
+            $data_to_keep{$key}->{date},
+            $data_to_keep{$key}->{accounttype},
+            $data_to_keep{$key}->{lastincrement},
+            $data_to_keep{$key}->{amount},
+            $data_to_keep{$key}->{amountoutstanding},
+            "Updated by undup_fines.pl",
+            $accountlines_id
+        );
+    }
 }
 
 exit 0;
