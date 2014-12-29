@@ -145,7 +145,9 @@ my $data_to_keep_sth = $global_dbh->prepare(
     b.accounttype as second_accounttype,
     b.lastincrement as lastincrement,
     b.amount as amount,
-    b.amount_paid as second_amount_paid
+    b.amount_paid as second_amount_paid,
+    borrowernumber,
+    itemnumber
 from 
     temp_duplicate_fines a
     inner join temp_duplicate_fines b using (borrowernumber, itemnumber, my_description) 
@@ -239,9 +241,8 @@ KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
         $amountoutstanding = 0;
     };
 
-    # TODO: IMPORTANT -- Make sure that 'my_description' uniquely identifies records at this point
-    #                    or create a new key.
-    $data_to_keep{ $keep->{my_description} } = {
+    my $key = $keep->{my_description} . $keep->{borrowernumber} . $keep->{itemnumber};
+    $data_to_keep{ $key } = {
         accountlines_id => $keep->{accountlines_id}
         , accounttype => $keep->{first_accounttype} eq 'FU' ? $keep->{second_accounttype} : $keep->{first_accounttype}
         , date => $keep->{date}
