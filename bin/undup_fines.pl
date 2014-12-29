@@ -151,7 +151,7 @@ my $data_to_keep_sth = $global_dbh->prepare(
 from 
     temp_duplicate_fines a
     inner join temp_duplicate_fines b using (borrowernumber, itemnumber, my_description) 
-where a.date < b.date"
+where a.date <= b.date"
 );
 
 my $delete_accountline_sth = $global_dbh->prepare(
