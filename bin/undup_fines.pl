@@ -164,7 +164,8 @@ set
     amount            = ?,
     amountoutstanding = ?,
     note              = ?
-where accountlines_id = ?"
+where accountlines_id = ?";
+
 my $update_accountlines_sth = $global_dbh->prepare( $update_accountlines_query );
 
 my $delete_accountline_sth = $global_dbh->prepare(
