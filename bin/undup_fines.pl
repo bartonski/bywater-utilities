@@ -12,7 +12,7 @@ my $global_dbh = C4::Context->dbh();
 my $opt_do_eet=0;
 my $opt_drop=1;
 my $opt_new_table=1;
-my $opt_report_file='~/undup_fines_report.csv';
+my $opt_report_file="$ENV{HOME}/undup_fines_report.csv";
 my $opt_help=0;
 
 GetOptions (
