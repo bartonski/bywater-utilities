@@ -154,7 +154,7 @@ from
 where a.date <= b.date"
 );
 
-my $update_accountlines_sth = $global_dbh->prepare(
+my $update_accountlines_query = 
 "update accountlines
 set
     description       = ?,
@@ -165,7 +165,7 @@ set
     amountoutstanding = ?,
     note              = ?
 where accountlines_id = ?"
-);
+my $update_accountlines_sth = $global_dbh->prepare( $update_accountlines_query );
 
 my $delete_accountline_sth = $global_dbh->prepare(
 "DELETE FROM accountlines
@@ -285,8 +285,7 @@ KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
 
 UPDATE_FINES: for my $key ( keys %data_to_keep ) {
     my $accountlines_id = $data_to_keep{$key}->{accountlines_id};
-    if( $opt_do_eet ) {
-        $update_accountlines_sth->execute(
+    my @update_accountlines_args = (
             $data_to_keep{$key}->{date},
             $data_to_keep{$key}->{accounttype},
             $data_to_keep{$key}->{lastincrement},
@@ -295,6 +294,10 @@ UPDATE_FINES: for my $key ( keys %data_to_keep ) {
             "Updated by fines de-duplicator",
             $accountlines_id
         );
+
+    log_info( $update_accountlines_query, @update_accountlines_args );
+    if( $opt_do_eet ) {
+        $update_accountlines_sth->execute( @update_accountlines_args );
     }
 }
 
