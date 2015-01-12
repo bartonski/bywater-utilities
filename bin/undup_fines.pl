@@ -68,8 +68,7 @@ if( $opt_new_table ) {
     );
     $description_sth->execute();
     my $description = $description_sth->fetchrow_hashref();
-
-    $global_dbh->do( 
+    my $temp_create_statement =
 "CREATE TABLE $temp_table_name (
     id                    int         NOT NULL         AUTO_INCREMENT PRIMARY KEY,
     accountlines_id       int(11)     NOT NULL, 
@@ -87,8 +86,9 @@ if( $opt_new_table ) {
     lastincrement         decimal(28,6),
     KEY accountlines_id   (accountlines_id),
     KEY fine_id           ( my_description, borrowernumber,  itemnumber )
-) ENGINE=InnoDB CHARSET=utf8;"
-    );
+) ENGINE=InnoDB CHARSET=utf8;"; 
+
+    $global_dbh->do( $temp_create_statement );
 }
 
 my $fines_sth = $global_dbh->prepare(
