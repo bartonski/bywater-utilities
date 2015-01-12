@@ -287,7 +287,7 @@ UPDATE_FINES: for my $key ( keys %data_to_keep ) {
             $data_to_keep{$key}->{lastincrement},
             $data_to_keep{$key}->{amount},
             $data_to_keep{$key}->{amountoutstanding},
-            "Updated by undup_fines.pl",
+            "Updated by fines de-duplicator",
             $accountlines_id
         );
     }
