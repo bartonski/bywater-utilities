@@ -168,10 +168,11 @@ where accountlines_id = ?";
 
 my $update_accountlines_sth = $global_dbh->prepare( $update_accountlines_query );
 
-my $delete_accountline_sth = $global_dbh->prepare(
+my $delete_accountlines_query = 
 "DELETE FROM accountlines
-WHERE accountlines_id = ?"
-);
+WHERE accountlines_id = ?";
+
+my $delete_accountlines_sth = $global_dbh->prepare( $delete_accountlines_query );
 
 sub log_warn {
     my $logdata = [ "Warning", @_ ];
