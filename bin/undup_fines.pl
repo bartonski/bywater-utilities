@@ -264,6 +264,7 @@ KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
     my $key = $keep->{my_description} . $keep->{borrowernumber} . $keep->{itemnumber};
     $data_to_keep{ $key } = {
         accountlines_id => $keep->{accountlines_id}
+        , description => $keep->{description}
         , accounttype => $keep->{first_accounttype} eq 'FU' ? $keep->{second_accounttype} : $keep->{first_accounttype}
         , date => $keep->{date}
         , lastincrement => $keep->{lastincrement}
@@ -288,6 +289,7 @@ KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
 UPDATE_FINES: for my $key ( keys %data_to_keep ) {
     my $accountlines_id = $data_to_keep{$key}->{accountlines_id};
     my @update_accountlines_args = (
+            $data_to_keep{$key}->{description},
             $data_to_keep{$key}->{date},
             $data_to_keep{$key}->{accounttype},
             $data_to_keep{$key}->{lastincrement},
