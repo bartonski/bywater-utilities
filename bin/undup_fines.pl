@@ -177,6 +177,11 @@ sub log_warn {
     $global_csv->print ( $global_report_fh, $logdata );
 }
 
+sub log_info {
+    my $logdata = [ "Info", @_ ];
+    $global_csv->print ( $global_report_fh, $logdata );
+}
+
 ############################ Create temp table ###############################
 
 print "Creating temp table '$temp_table_name'\n";
