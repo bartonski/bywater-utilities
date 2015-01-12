@@ -64,7 +64,7 @@ if( $opt_new_table ) {
     $global_dbh->do( $temp_table_drop );
 
     my $description_sth = $global_dbh->prepare(
-        "select LENGTH(description) from accountlines order by LENGTH(description) DESC limit 1;"
+        "select LENGTH(description) as 'length' from accountlines order by LENGTH(description) DESC limit 1;"
     );
     $description_sth->execute();
     my $description = $description_sth->fetchrow_hashref();
