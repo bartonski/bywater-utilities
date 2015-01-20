@@ -231,7 +231,7 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
     unless ( $correct_timeformat ) {
         $bad_description{$my_description} = 1;
         log_warn(   "Accountlines description '$my_description' matches record with undefined fields. Please inspect."
-                  , $current_record );
+                  , $current_fine_record );
         
     }
     
