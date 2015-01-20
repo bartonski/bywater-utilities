@@ -145,6 +145,8 @@ count(*) = ?";
 
 my $temp_fines_having_coung_sth = $global_dbh->prepare( $temp_fines_having_count_query );
 
+## TODO: need to test for duplicate fines that have the same date. This program won't be able to handle those.
+
 my $data_to_keep_query = 
 "select 
     a.my_description, 
