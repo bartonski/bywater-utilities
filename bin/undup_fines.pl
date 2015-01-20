@@ -195,11 +195,14 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
     my $newline = ( $i % 100 ) ? "" : "\r$i";
     print ".$newline";
 
-    if    (    not defined($fine->{borrowernumber}) 
-            || not defined($fine->{my_description})
-            || not defined($fine->{itemnumber})
-          ) {
-       log_warn(   "Accountlines record is missing borrowernumber, description or itemnumber"
+    my %undefined_field = ();
+    for my $f ( qw ( borrowernumber description itemnumber ) ) {
+        $undefined_field{$f} = 1 if not defined($fine->{$f});
+    }
+
+    my @undefined_fields = ( keys %undefined_field );
+    if ( scalar @undefined_fields > 0 ) {
+       log_warn(   "Accountlines record is missing " . join ( ', ' , @undefined_fields )
                  , $fine->{accountlines_id}
                  , $fine->{borrowernumber}
                  , $fine->{accountno}
