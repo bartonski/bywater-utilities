@@ -34,8 +34,13 @@ open $global_report_fh, '>:encoding(utf8)', $opt_report_file
 
 # possible values 24hr, ( 12hr ? ) 
 my $time_format = C4::Context->preference('TimeFormat');
+log_info( "Syspref 'Timeformat'", $time_format );
+
 my $time_due_correct = ( $time_format eq '24hr' ) ? "23:59"    : "11:59 PM" ;
+log_info( "internal: '\$time_due_correct'", $time_due_correct );
+
 my $time_due_fixme   = ( $time_format eq '24hr' ) ? "11:59 PM" : "23:59"    ;
+log_info( "internal: '\$time_due_fixme'", $time_due_fixme );
 
 
 my $temp_table_name   = 'temp_duplicate_fines';
