@@ -291,12 +291,13 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
 
 print "\nCreating list of data to keep\n";
 
+my %data_to_keep;
+
 $temp_fines_having_coung_sth->execute(2);
 DUPLICATES: while ( my $duplicate = $temp_fines_having_coung_sth->fetchrow_hashref() ) {
     my @key = ( $duplicate->{borrowernumber}, $duplicate->{itemnumber} , $duplicate->{my_description} ); 
     my $key = join( '', @key );
     $data_to_keep_sth->execute( @key );
-    my %data_to_keep;
     KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
         my $total_paid = $keep->{first_amount_paid} + $keep->{second_amount_paid};
         my $amount = $keep->{amount} || 0;
@@ -312,7 +313,6 @@ DUPLICATES: while ( my $duplicate = $temp_fines_having_coung_sth->fetchrow_hashr
             $amountoutstanding = 0;
         };
 
-        my $key = $keep->{my_description} . $keep->{borrowernumber} . $keep->{itemnumber};
         $data_to_keep{ $key } = {
             accountlines_id => $keep->{accountlines_id}
             , description => $keep->{description}
