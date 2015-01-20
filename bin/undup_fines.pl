@@ -167,7 +167,7 @@ from
     temp_duplicate_fines a
     inner join temp_duplicate_fines b using (borrowernumber, itemnumber, my_description) 
 where 
-    a.date <= b.date
+    a.date < b.date
     and a.borrowernumber = ? 
     and a.itemnumber = ?  
     and  a.my_description = ?
