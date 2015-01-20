@@ -247,10 +247,12 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
             $log_correct_timeformat = 1 if $bad_description{$my_description};
             $undefined_good_description{$my_description} = 1;
         }
-        if( $correct_timeformat == 0 || $log_correct_timeformat == 1 )
-        log_warn(   "Accountlines record is missing " . join ( ', ' , @undefined_fields ) . ". Please inspect."
-                    @current_fine_record
-               ); 
+        if( $correct_timeformat == 0 || $log_correct_timeformat == 1 ) {
+            log_warn(   "Accountlines record is missing " . join ( ', ' , @undefined_fields ) . ". Please inspect."
+                        @current_fine_record
+                   ); 
+            $bad_description{$my_description} = 1;
+        }
         next FINE;
     }
 
