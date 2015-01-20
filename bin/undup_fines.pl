@@ -130,6 +130,17 @@ FROM $temp_table_name
 WHERE correct_timeformat = 0"
 );
 
+my $temp_fines_having_count_query =
+"select 
+    borrowernumber, 
+    itemnumber, 
+    my_description 
+from temp_duplicate_fines 
+group by borrowernumber, itemnumber, my_description having 
+count(*) = ?";
+
+my $temp_fines_having_coung_sth = $global_dbh->prepare( $temp_fines_having_count_query );
+
 my $data_to_keep_sth = $global_dbh->prepare(
 "select 
     a.my_description, 
@@ -151,7 +162,12 @@ my $data_to_keep_sth = $global_dbh->prepare(
 from 
     temp_duplicate_fines a
     inner join temp_duplicate_fines b using (borrowernumber, itemnumber, my_description) 
-where a.date <= b.date"
+where 
+    a.date <= b.date
+    and a.borrowernumber = ? 
+    and a.itemnumber = ?  
+    and  a.my_description = ?
+"
 );
 
 my $update_accountlines_query = 
@@ -275,34 +291,49 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
 
 print "\nCreating list of data to keep\n";
 
-$data_to_keep_sth->execute();
-my %data_to_keep;
-KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
-    my $total_paid = $keep->{first_amount_paid} + $keep->{second_amount_paid};
-    my $amount = $keep->{amount} || 0;
-    my $amountoutstanding = $amount - $total_paid;
-    if ( $amountoutstanding < 0 ) {
-        # TODO log debit needed.
-        log_warn( "Amount paid is greater than amount outstanding", 
-                  "Accountlines ID:" , $keep->{accountlines_id} ,
-                  "Total paid:"      , $total_paid              ,
-                  "Fine amount:"     , $keep->{amount}          ,
-                  "Credit:"          , -$amountoutstanding
-                );
-        $amountoutstanding = 0;
-    };
+$temp_fines_having_coung_sth->execute(2);
+DUPLICATES: while ( my $duplicate = $temp_fines_having_coung_sth->fetchrow_hashref() ) {
+    my @key = ( $duplicate->{borrowernumber}, $duplicate->{itemnumber} , $duplicate->{my_description} ); 
+    my $key = join( '', @key );
+    $data_to_keep_sth->execute( @key );
+    my %data_to_keep;
+    KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
+        my $total_paid = $keep->{first_amount_paid} + $keep->{second_amount_paid};
+        my $amount = $keep->{amount} || 0;
+        my $amountoutstanding = $amount - $total_paid;
+        if ( $amountoutstanding < 0 ) {
+            # TODO log debit needed.
+            log_warn( "Amount paid is greater than amount outstanding", 
+                      "Accountlines ID:" , $keep->{accountlines_id} ,
+                      "Total paid:"      , $total_paid              ,
+                      "Fine amount:"     , $keep->{amount}          ,
+                      "Credit:"          , -$amountoutstanding
+                    );
+            $amountoutstanding = 0;
+        };
 
-    my $key = $keep->{my_description} . $keep->{borrowernumber} . $keep->{itemnumber};
-    $data_to_keep{ $key } = {
-        accountlines_id => $keep->{accountlines_id}
-        , description => $keep->{description}
-        , accounttype => $keep->{first_accounttype} eq 'FU' ? $keep->{second_accounttype} : $keep->{first_accounttype}
-        , date => $keep->{date}
-        , lastincrement => $keep->{lastincrement}
-        , amount => $keep->{amount}
-        , amountoutstanding => $amountoutstanding
-    };
+        my $key = $keep->{my_description} . $keep->{borrowernumber} . $keep->{itemnumber};
+        $data_to_keep{ $key } = {
+            accountlines_id => $keep->{accountlines_id}
+            , description => $keep->{description}
+            , accounttype => $keep->{first_accounttype} eq 'FU' ? $keep->{second_accounttype} : $keep->{first_accounttype}
+            , date => $keep->{date}
+            , lastincrement => $keep->{lastincrement}
+            , amount => $keep->{amount}
+            , amountoutstanding => $amountoutstanding
+        };
+    }
 }
+
+$temp_fines_having_coung_sth->execute(1);
+SINGLETONS: while ( my $singleton = $temp_fines_having_coung_sth->fetchrow_hashref() ) {
+    my @key = ( $singleton->{borrowernumber}, $singleton->{itemnumber} , $singleton->{my_description} ); 
+    my $key = join( '', @key );
+
+    # Update description if correct_timeformat is 0.
+}
+
+# Check for fines having count greater than 3... This shouldn't happen, but stranger things have happened.
 
 ## TESTING: Stop after temp table has been populated.
 
