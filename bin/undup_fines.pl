@@ -42,7 +42,6 @@ log_info( "internal: '\$time_due_correct'", $time_due_correct );
 my $time_due_fixme   = ( $time_format eq '24hr' ) ? "11:59 PM" : "23:59"    ;
 log_info( "internal: '\$time_due_fixme'", $time_due_fixme );
 
-
 my $temp_table_name   = 'temp_duplicate_fines';
 my $temp_table_drop   = "DROP TABLE IF EXISTS $temp_table_name;";
 
@@ -146,7 +145,7 @@ count(*) = ?";
 
 my $temp_fines_having_coung_sth = $global_dbh->prepare( $temp_fines_having_count_query );
 
-my $data_to_keep_sth = $global_dbh->prepare(
+my $data_to_keep_query = 
 "select 
     a.my_description, 
     CASE 
@@ -172,8 +171,8 @@ where
     and a.borrowernumber = ? 
     and a.itemnumber = ?  
     and  a.my_description = ?
-"
-);
+";
+my $data_to_keep_sth = $global_dbh->prepare( $data_to_keep_query );
 
 my $update_accountlines_query = 
 "update accountlines
@@ -303,6 +302,7 @@ DUPLICATES: while ( my $duplicate = $temp_fines_having_coung_sth->fetchrow_hashr
     my @key = ( $duplicate->{borrowernumber}, $duplicate->{itemnumber} , $duplicate->{my_description} ); 
     my $key = join( '', @key );
     $data_to_keep_sth->execute( @key );
+    log_info( $data_to_keep_query, @key );;
     KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
         my $total_paid = $keep->{first_amount_paid} + $keep->{second_amount_paid};
         my $amount = $keep->{amount} || 0;
