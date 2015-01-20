@@ -188,6 +188,8 @@ sub log_info {
 
 print "Creating temp table '$temp_table_name'\n";
 
+my %undefined_good_description;
+my %bad_description;
 my $i=0;
 $fines_sth->execute();
 FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
@@ -195,39 +197,63 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
     my $newline = ( $i % 100 ) ? "" : "\r$i";
     print ".$newline";
 
-    my %undefined_field = ();
-    for my $f ( qw ( borrowernumber description itemnumber ) ) {
-        $undefined_field{$f} = 1 if not defined($fine->{$f});
-    }
-
-    my @undefined_fields = ( keys %undefined_field );
-    if ( scalar @undefined_fields > 0 ) {
-       log_warn(   "Accountlines record is missing " . join ( ', ' , @undefined_fields )
-                 , $fine->{accountlines_id}
-                 , $fine->{borrowernumber}
-                 , $fine->{accountno}
-                 , $fine->{itemnumber}
-                 , $fine->{date}
-                 , $fine->{amount}
-                 , $fine->{description}
-                 , $fine->{dispute}
-                 , $fine->{accounttype}
-                 , $fine->{amountoutstanding}
-                 , $fine->{lastincrement}
-                 , $fine->{timestamp}
-                 , $fine->{notify_id}
-                 , $fine->{notify_level}
-                 , $fine->{note}
-                 , $fine->{manager_id}
-               ); 
-        next FINE;
-    }
+    # used for logging
+    my @current_fine_record = (
+           $fine->{accountlines_id}
+         , $fine->{borrowernumber}
+         , $fine->{accountno}
+         , $fine->{itemnumber}
+         , $fine->{date}
+         , $fine->{amount}
+         , $fine->{description}
+         , $fine->{dispute}
+         , $fine->{accounttype}
+         , $fine->{amountoutstanding}
+         , $fine->{lastincrement}
+         , $fine->{timestamp}
+         , $fine->{notify_id}
+         , $fine->{notify_level}
+         , $fine->{note}
+         , $fine->{manager_id}
+    );
 
     my $my_description = $fine->{description};
     my $amount_paid    = $fine->{amount} - $fine->{amountoutstanding};
     my $correct_timeformat 
          = $fine->{description} =~ /${time_due_correct}$/ ? 1 : 0;
     $my_description =~ s/(${time_due_correct}|${time_due_fixme})$//;
+
+    my %undefined_field = ();
+    for my $f ( qw ( borrowernumber description itemnumber ) ) {
+        $undefined_field{$f} = 1 if not defined($fine->{$f});
+    }
+
+    unless ( $correct_timeformat ) {
+        $bad_description{$my_description} = 1;
+        log_warn(   "Accountlines description '$my_description' matches record with undefined fields. Please inspect."
+                  , $current_record );
+        
+    }
+    
+    my @undefined_fields = ( keys %undefined_field );
+    if ( scalar @undefined_fields > 0 ) {
+        #  We don't want to clog the logs with warnings about fines what have the correct
+        #  time format. We only care if there's a possibility that they're a duplicate.
+        #  We'll only log if it matches the currently known bad timeformats, and
+        #  we'll also put it into a list of undefined good time formats. If either of
+        #  these match, we'll log it.
+        my $log_correct_timeformat = 0;
+        if( $correct_timeformat ) {
+            $log_correct_timeformat = 1 if $bad_description{$my_description};
+            $undefined_good_description{$my_description} = 1;
+        }
+        if( $correct_timeformat == 0 || $log_correct_timeformat == 1 )
+        log_warn(   "Accountlines record is missing " . join ( ', ' , @undefined_fields ) . ". Please inspect."
+                    @current_fine_record
+               ); 
+        next FINE;
+    }
+
     $insert_temp_sth->execute(
         $fine->{accountlines_id}, # accountlines_id 
         $fine->{description},     # original_description 
