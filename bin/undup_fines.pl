@@ -374,7 +374,7 @@ SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashr
     my $key = join( '', @key );
 
     $singleton_get_bad_accountlines_id_sth->execute( @key );
-    my $bad_singleton = $singleton_get_bad_accountlines_id_sth->execute->fetchrow_hashref();
+    my $bad_singleton = $singleton_get_bad_accountlines_id_sth->fetchrow_hashref();
     
     # TODO: query for singletons with bad description
     log_info( "Update description: ",
