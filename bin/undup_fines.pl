@@ -161,9 +161,10 @@ my $singleton_get_bad_accountlines_id_query =
 "select
     accountlines_id
 from temp_duplicate_fines 
-where borrowernumber = ? 
+where correct_timeformat = 0
+  and borrowernumber = ? 
   and itemnumber = ? 
-  and my_description = ?":
+  and my_description = ?";
 
 my $singleton_get_bad_accountlines_id_sth = $global_dbh->prepare( $singleton_get_bad_accountlines_id_query );
 
