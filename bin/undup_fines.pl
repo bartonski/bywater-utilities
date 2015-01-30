@@ -149,7 +149,8 @@ my $temp_fines_having_count_greater_than_query =
 "select 
     borrowernumber, 
     itemnumber, 
-    my_description 
+    my_description,
+    count(*)
 from temp_duplicate_fines 
 group by borrowernumber, itemnumber, my_description having 
 count(*) > ?";
@@ -369,6 +370,11 @@ MULTIPLES: while ( my $multiple = $temp_fines_having_count_greater_than_sth->fet
     my $key = join( '', @key );
 
     # Log a warning.
+    log_warn( "There are $multiple->{count} records with the following borrowernumber, itemnumber and description" 
+                , $multiple->{borrowernumber}
+                , $multiple->{itemnumber}
+                , $multiple->{my_description}
+            );
 }
 
 ## TESTING: Stop after temp table has been populated.
