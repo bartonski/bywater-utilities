@@ -143,7 +143,19 @@ from temp_duplicate_fines
 group by borrowernumber, itemnumber, my_description having 
 count(*) = ?";
 
-my $temp_fines_having_coung_sth = $global_dbh->prepare( $temp_fines_having_count_query );
+my $temp_fines_having_count_sth = $global_dbh->prepare( $temp_fines_having_count_query );
+
+my $temp_fines_having_count_greater_than_query =
+"select 
+    borrowernumber, 
+    itemnumber, 
+    my_description 
+from temp_duplicate_fines 
+group by borrowernumber, itemnumber, my_description having 
+count(*) > ?";
+
+my $temp_fines_having_count_greater_than_sth = $global_dbh->prepare( $temp_fines_having_count_greater_than_query );
+
 
 ## TODO: need to test for duplicate fines that have the same date. This program won't be able to handle those.
 
@@ -210,7 +222,7 @@ sub log_info {
 
 print "Creating temp table '$temp_table_name'\n";
 
-my %undefined_good_description;
+my %missing_good_description;
 my %bad_description;
 my $i=0;
 $fines_sth->execute();
@@ -261,6 +273,7 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
     
     my @undefined_fields = ( keys %undefined_field );
     if ( scalar @undefined_fields > 0 ) {
+        #  TODO: This logic needs to be documented in perldoc
         #  We don't want to clog the logs with warnings about fines what have the correct
         #  time format. We only care if there's a possibility that they're a duplicate.
         #  We'll only log if it matches the currently known bad timeformats, and
@@ -268,8 +281,9 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
         #  these match, we'll log it.
         my $log_correct_timeformat = 0;
         if( $correct_timeformat ) {
+            # TODO: We're not doing anything with %missing_good_description.
             $log_correct_timeformat = 1 if $bad_description{$my_description};
-            $undefined_good_description{$my_description} = 1;
+            $missing_good_description{$my_description} = 1;
         }
         if( $correct_timeformat == 0 || $log_correct_timeformat == 1 ) {
             log_warn(   "Accountlines record is missing " 
@@ -303,8 +317,11 @@ print "\nCreating list of data to keep\n";
 
 my %data_to_keep;
 
-$temp_fines_having_coung_sth->execute(2);
-DUPLICATES: while ( my $duplicate = $temp_fines_having_coung_sth->fetchrow_hashref() ) {
+$i = 0;
+$temp_fines_having_count_sth->execute(2);
+PAIRS: while ( my $duplicate = $temp_fines_having_count_sth->fetchrow_hashref() ) {
+    $i++;
+    my $newline = ( $i % 100 ) ? "" : "\r$i";
     my @key = ( $duplicate->{borrowernumber}, $duplicate->{itemnumber} , $duplicate->{my_description} ); 
     my $key = join( '', @key );
     $data_to_keep_sth->execute( @key );
@@ -314,7 +331,6 @@ DUPLICATES: while ( my $duplicate = $temp_fines_having_coung_sth->fetchrow_hashr
         my $amount = $keep->{amount} || 0;
         my $amountoutstanding = $amount - $total_paid;
         if ( $amountoutstanding < 0 ) {
-            # TODO log debit needed.
             log_warn( "Amount paid is greater than amount outstanding", 
                       "Accountlines ID:" , $keep->{accountlines_id} ,
                       "Total paid:"      , $total_paid              ,
@@ -338,15 +354,22 @@ DUPLICATES: while ( my $duplicate = $temp_fines_having_coung_sth->fetchrow_hashr
     }
 }
 
-$temp_fines_having_coung_sth->execute(1);
-SINGLETONS: while ( my $singleton = $temp_fines_having_coung_sth->fetchrow_hashref() ) {
+$temp_fines_having_count_sth->execute(1);
+SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashref() ) {
     my @key = ( $singleton->{borrowernumber}, $singleton->{itemnumber} , $singleton->{my_description} ); 
     my $key = join( '', @key );
 
     # Update description if correct_timeformat is 0.
 }
 
-# Check for fines having count greater than 3... This shouldn't happen, but stranger things have happened.
+# TODO: Check for fines having count greater than 3... This shouldn't happen, but stranger things have happened.
+$temp_fines_having_count_greater_than_sth->execute(2);
+MULTIPLES: while ( my $multiple = $temp_fines_having_count_greater_than_sth->fetchrow_hashref() ) {
+    my @key = ( $multiple->{borrowernumber}, $multiple->{itemnumber} , $multiple->{my_description} ); 
+    my $key = join( '', @key );
+
+    # Log a warning.
+}
 
 ## TESTING: Stop after temp table has been populated.
 
@@ -380,60 +403,6 @@ UPDATE_FINES: for my $key ( keys %data_to_keep ) {
     }
 }
 
-exit 0;
-
-
-# There should only be two rows for each description 
-# -- timeformat will be 0 or 1.
-# bad_fine_sth queries for fines where correct_timeformat is 0
-$bad_fine_sth->execute();
-BADFINES: while( my $bad_fine = $bad_fine_sth->fetchrow_hashref() ) {
-    $count_fines_sth->execute($bad_fine->{my_description});
-    my $count;
-    while( my $sanity_check = $count_fines_sth->fetchrow_hashref() ) {
-        $count=$sanity_check->{count};
-        if( $count > 2 ) {
-            print   "WARNING: $sanity_check->{count} occurrences of "
-                  . "'$bad_fine->{my_description}'. Skipping records.\n";
-            next BADFINES;
-        }
-    }
-
-    if( $count == 2 ) {
-        # From notes in ticket:
-        #
-        # Fines *START* with accounttype 'FU' and are converted to 'F' when an item is checked in.
-        #
-        # Furthermore, it seems like we can always use the later
-        # of the the two fines for accounttype, date, lastincrement,
-        # and amount. Amount paid will have to be adjusted based on the
-        # earlier fine. Description will match the correct timeformat.
-        #
-        # I think that this is correct in everything except accounttype ...
-        # if accounttype is anything other than "FU" we will keep the
-        # "Higher" accounttype.
-
-        # Write a function to pull the following:
-        # $data_to_keep = {
-        #     accountlines_id => # the later of the two accountlines entries
-        #     accounttype     => # "FU", unless one of the records has a different entry.
-        #     date            => # The later of the two dates
-        #     lastincrement   => # Lastincrement for the later record
-        #     amount          => # Adjust amount using amount_paid from earlier record
-        #     description     => # 'GOOD' description
-        # } 
-
-        # After we've found $data_to_keep, we can simply do an update on the newer record, and delete the old.
-
-    } else {
-        # Only the bad fine exists. Fix the description and move on.
-
-        next BADFINES;
-    }
-
-    next BADFINES if ( $bad_fine->{amount_paid} == 0 );
-
-}
 
 END {
     unless( $opt_help ) {
@@ -441,6 +410,8 @@ END {
         close $global_report_fh;
     }
 }
+
+exit 0;
 
 =head1 NAME
 
