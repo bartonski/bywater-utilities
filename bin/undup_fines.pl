@@ -368,6 +368,8 @@ PAIRS: while ( my $duplicate = $temp_fines_having_count_sth->fetchrow_hashref() 
     }
 }
 
+print "\nUpdating singletons\n";
+$i=0;
 $temp_fines_having_count_sth->execute(1);
 SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashref() ) {
     my @key = ( $singleton->{borrowernumber}, $singleton->{itemnumber} , $singleton->{my_description} ); 
@@ -377,13 +379,15 @@ SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashr
     my $bad_singleton = $singleton_get_bad_accountlines_id_sth->fetchrow_hashref();
     
     # TODO: query for singletons with bad description
-    log_info( "Update description: ",
-              "Description:", $singleton->{my_description},
-              "Accountlines_id", $bad_singleton->{accontlines_id}  );
-        
-    if( $opt_do_eet ) {
-        # TODO: run update for bad descriptons here.
+    if( defined $bad_singleton->{accountlines_id} ) {
+        log_info( "Update description: ", 
+                  "Description:", $singleton->{my_description},
+                  "Accountlines_id", $bad_singleton->{accountlines_id}  );
+        if( $opt_do_eet ) {
+            # TODO: run update for bad descriptons here.
+        }
     }
+        
 }
 
 # TODO: Check for fines having count greater than 3... This shouldn't happen, but stranger things have happened.
