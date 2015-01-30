@@ -157,6 +157,16 @@ count(*) > ?";
 
 my $temp_fines_having_count_greater_than_sth = $global_dbh->prepare( $temp_fines_having_count_greater_than_query );
 
+my $singleton_get_bad_accountlines_id_query =
+"select
+    accountlines_id
+from temp_duplicate_fines 
+where borrowernumber = ? 
+  and itemnumber = ? 
+  and my_description = ?":
+
+my $singleton_get_bad_accountlines_id_sth = $global_dbh->prepare( $singleton_get_bad_accountlines_id_query );
+
 
 ## TODO: need to test for duplicate fines that have the same date. This program won't be able to handle those.
 
@@ -362,7 +372,17 @@ SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashr
     my @key = ( $singleton->{borrowernumber}, $singleton->{itemnumber} , $singleton->{my_description} ); 
     my $key = join( '', @key );
 
-    # Update description if correct_timeformat is 0.
+    $singleton_get_bad_accountlines_id_sth->execute( @key );
+    my $bad_singleton = $singleton_get_bad_accountlines_id_sth->execute->fetchrow_hashref();
+    
+    # TODO: query for singletons with bad description
+    log_info( "Update description: ",
+              "Description:", $singleton->{my_description},
+              "Accountlines_id", $bad_singleton->{accontlines_id}  );
+        
+    if( $opt_do_eet ) {
+        # TODO: run update for bad descriptons here.
+    }
 }
 
 # TODO: Check for fines having count greater than 3... This shouldn't happen, but stranger things have happened.
