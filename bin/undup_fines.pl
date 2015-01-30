@@ -323,6 +323,8 @@ $temp_fines_having_count_sth->execute(2);
 PAIRS: while ( my $duplicate = $temp_fines_having_count_sth->fetchrow_hashref() ) {
     $i++;
     my $newline = ( $i % 100 ) ? "" : "\r$i";
+    print ".$newline";
+
     my @key = ( $duplicate->{borrowernumber}, $duplicate->{itemnumber} , $duplicate->{my_description} ); 
     my $key = join( '', @key );
     $data_to_keep_sth->execute( @key );
@@ -370,25 +372,14 @@ MULTIPLES: while ( my $multiple = $temp_fines_having_count_greater_than_sth->fet
     my $key = join( '', @key );
 
     # Log a warning.
-    log_warn( "There are $multiple->{count} records with the following borrowernumber, itemnumber and description" 
+    log_warn( "There are $multiple->{count} records "
+                . "with the following borrowernumber, "
+                . "itemnumber and description" 
                 , $multiple->{borrowernumber}
                 , $multiple->{itemnumber}
                 , $multiple->{my_description}
             );
 }
-
-## TESTING: Stop after temp table has been populated.
-
-# "update accountlines
-# set
-#     description       = ?,
-#     date              = ?,
-#     accounttype       = ?,
-#     lastincrement     = ?,
-#     amountoutstanding = ?,
-#     note              = ?
-# where accountlines_id = ?"
-
 
 UPDATE_FINES: for my $key ( keys %data_to_keep ) {
     my $accountlines_id = $data_to_keep{$key}->{accountlines_id};
