@@ -252,7 +252,9 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
 
     unless ( $correct_timeformat ) {
         $bad_description{$my_description} = 1;
-        log_warn(   "Accountlines description '$my_description' matches record with undefined fields. Please inspect."
+        log_warn(   "Accountlines description '" 
+                    . $my_description 
+                    . "' matches record with undefined fields. Please inspect."
                   , @current_fine_record );
         
     }
@@ -270,7 +272,9 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
             $undefined_good_description{$my_description} = 1;
         }
         if( $correct_timeformat == 0 || $log_correct_timeformat == 1 ) {
-            log_warn(   "Accountlines record is missing " . join ( ', ' , @undefined_fields ) . ". Please inspect."
+            log_warn(   "Accountlines record is missing " 
+                        . join ( ', ' , @undefined_fields ) 
+                        . ". Please inspect."
                         , @current_fine_record
                    ); 
             $bad_description{$my_description} = 1;
@@ -323,7 +327,9 @@ DUPLICATES: while ( my $duplicate = $temp_fines_having_coung_sth->fetchrow_hashr
         $data_to_keep{ $key } = {
             accountlines_id => $keep->{accountlines_id}
             , description => $keep->{description}
-            , accounttype => $keep->{first_accounttype} eq 'FU' ? $keep->{second_accounttype} : $keep->{first_accounttype}
+            , accounttype => $keep->{first_accounttype} eq 'FU' 
+                                                           ? $keep->{second_accounttype} 
+                                                           : $keep->{first_accounttype}
             , date => $keep->{date}
             , lastincrement => $keep->{lastincrement}
             , amount => $keep->{amount}
