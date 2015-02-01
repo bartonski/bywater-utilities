@@ -15,13 +15,32 @@ then
 fi
 
 # Shell Functions
-ticket() { xdg-open http://${RTSERVER}Ticket/Display.html?id=${1}; sleep 1; echo; }
+ticket() { xdg-open ${RTSERVER}Ticket/Display.html?id=${1}; sleep 1; echo; }
+
+ticket() { 
+    local ticket_url="${RTSERVER}Ticket/Display.html?id=${1}"
+    echo "$ticket_url"
+    xdg-open "$ticket_url"
+    sleep 1
+    echo
+}
+
+partner_ticket() { 
+    local partner_url="${RTSERVER}SelfService/Display.html?id=${1}"
+    echo "$partner_url"
+    xdg-open "$partner_url"
+    sleep 1
+    echo
+}
+
 
 bug() { xdg-open http://${BUGZILLA}/bugzilla3/show_bug.cgi?id=${1}; sleep 1; echo; }
 
-assh() { ssh -t $BYWATER_GATEWAY ssh "$@"; }
+assh() { time ssh -t $BYWATER_GATEWAY ssh "$@"; }
 
 sassh() { ssh  $BYWATER_GATEWAY ssh "$@"; } # 'straight' assh.
+
+shortname() { ssh  $BYWATER_GATEWAY grep "$1" /etc/hosts; }
 
 mksupport() { mkdir -p $SUPPORT/$1/files; }
 
@@ -57,8 +76,20 @@ sugar()
     fi
 }
 
+opacurl () {
+    set -x
+    local linkfile=$HOME/Support/notes/ticketlinks.txt
+    if grep "^${1}\>" $linkfile 2>&1 > /dev/null
+    then
+        opac="$(grep ^${1}: $linkfile | grep 'Opac' | cut -d ':' -f 3- | sed 's|/$||')"
+        url="${opac}/${2}"
+        echo $url
+        xdg-open $url
+    fi
+    set +x
+}
+
 kohaurl () {
-    set -x 
     local linkfile=$HOME/Support/notes/ticketlinks.txt
     if grep "^${1}\>" $linkfile 2>&1 > /dev/null
     then
@@ -67,11 +98,22 @@ kohaurl () {
         echo $url
         xdg-open $url
     fi
-    set +x
+}
+
+kohaff () {
+    local linkfile=$HOME/Support/notes/ticketlinks.txt
+    if grep "^${1}\>" $linkfile 2>&1 > /dev/null
+    then
+        staffclient="$(grep ^${1}: $linkfile | grep Staff | cut -d ':' -f 3- | sed 's|/$||')"
+        url="${staffclient}/${2}"
+        echo $url
+        /usr/bin/firefox $url 2> /dev/null & 
+    fi
 }
 
 kohaversion() {
     kohaurl "$1" "cgi-bin/koha/about.pl"
+    ssh annon watchcat -tkohav -k$1
 }
 
 kohaletter() {
@@ -81,6 +123,73 @@ kohaletter() {
 kohaconf() {
     kohaurl "$1" "cgi-bin/koha/admin/admin-home.pl"
 }
+
+kohacirc() {
+    kohaurl "$1" "cgi-bin/koha/circ/circulation-home.pl"
+}
+
+kohapatron() {
+    kohaurl "$1" "cgi-bin/koha/members/members-home.pl"
+}
+
+kohasearch() {
+    kohaurl "$1" "cgi-bin/koha/catalogue/search.pl"
+}
+
+kohalist() {
+    kohaurl "$1" "cgi-bin/koha/virtualshelves/shelves.pl"
+}
+
+kohacatalog() {
+    kohaurl "$1" "cgi-bin/koha/cataloguing/addbooks.pl"
+}
+
+kohaauthorities() {
+    kohaurl "$1" "cgi-bin/koha/authorities/authorities-home.pl"
+}
+
+kohaserials() {
+    kohaurl "$1" "cgi-bin/koha/serials/serials-home.pl"
+}
+
+kohalogout() {
+    kohaurl "$1" "cgi-bin/koha/mainpage.pl?logout.x=1"
+}
+
+kohaacq() {
+    echo "*** Log in as bwssupport! ***"
+    kohaurl "$1" "cgi-bin/koha/acqui/acqui-home.pl"
+}
+
+kohareport() {
+    kohaurl "$1" "cgi-bin/koha/reports/reports-home.pl"
+}
+
+kohatools() {
+    kohaurl "$1" "cgi-bin/koha/tools/tools-home.pl"
+}
+
+kohapl() {
+    kohaurl "$1" "cgi-bin/koha/$2"
+}
+
+kohabib() {
+    kohaurl "$1" "cgi-bin/koha/catalogue/detail.pl?biblionumber=$2"
+}
+
+opacselfcheck() {
+    opacurl "$1" "cgi-bin/koha/sco/sco-main.pl"
+}
+
+marcrefrence() {
+    xdg-open "http://www.loc.gov/marc/bibliographic/bd${1}.html"
+}
+
+# Just because I probably won't remember "opacselfcheck"
+kohaselfcheck() {
+    opacurl "$1" "cgi-bin/koha/sco/sco-main.pl"
+}
+
 tt() #tablify tickets
 {
     $HOME/bin/tablify_tickets.pl > $HOME/public_html/ticket-table.html
@@ -101,8 +210,12 @@ croncomment () {
 }
 
 md() { 
+    local htmldir="$HOME/public_html/markdown"
+    test -d $htmldir || mkdir $htmldir
     local base="$(basename $1 '.markdown')"
-    pandoc -f markdown $1 > ${base}.html
+    local htmlfile="$htmldir/${base}.html"
+    pandoc -f markdown $1 > "$htmlfile"
+    echo "$htmlfile"
 }
 
 grepks () 
@@ -110,3 +223,63 @@ grepks ()
     egrep --color=auto -i "^(CREATE TABLE|[)])|$1" /data/barton/Support/git/koha/installer/data/mysql/kohastructure.sql | grep --color=auto -i --color=auto -B1 "$1"
 }
 
+bugqueue ()
+{
+echo | xsel << END
+I am moving this ticket to our bugs queue; we will monitor the status of the community bug until a fix has
+
+* Been Written
+* Passed QA
+* Been pushed into a stable release
+* Been deployed on to your system
+END
+}
+
+rttime () {
+    perl -e '$minutes = $ARGV[0] + 15; $quarter_hours = int($minutes/15); print $quarter_hours*15 . " minutes\n" ' $1
+}
+
+# The following three functions need to be refactored.
+# Title for 'nextrecord()', below.
+t() { rtnum="$1"; shortname="$2"; subject="$3"; echo "for $rtnum $shortname $subject"; }
+
+# An extension of querymarc, generating actual sql. Needs to be split into two functions.
+qm () 
+{ 
+    qm="$(querymarc $1)";
+    echo "select $qm from biblioitems where $qm != '' limit 1;";
+    echo "select marcxml from biblioitems where $qm != '' limit 1;"
+}
+
+# nextrecord 13 20930 gts 'add zebra indexes 260$e, 264$a, 752$a-$h => publisher location' '260$e'
+nextrecord () 
+{ 
+    bibnum=$1;
+    rtnum=$2;
+    shortname=$3;
+    subject="$4";
+    edbib $bibnum;
+    t $rtnum $shortname "$subject";
+    qm="$(querymarc $5)";
+    echo "assh $shortname";
+    echo "sudo koha-list";
+    echo "ps aux | grep $shortname";
+    echo "sudo koha-mysql $shortname";
+    echo "select $qm from biblioitems where $qm != '' limit 1;";
+    echo "select marcxml from biblioitems where $qm != '' limit 1;"
+}
+
+schedule_rebuild() {
+    echo "# $(date +%Y-%m-%d) -- $USER@bywatersolutions.com -- http://ticket.bywatersolutions.com/Ticket/Display.html?id=$1"
+    date +"5 0 %d %m %u \$HOME/run_rebuild.sh" -d tomorrow; 
+}
+
+datediff() {
+    later="${1}"
+    earlier="${2}"
+    echo $(( $(date -d "$later" +%j) - $(date -d "$earlier" +%j) ))
+}
+
+bugrelease() {
+    git log --oneline | egrep -i "Bug $1|release" | grep --context=10 "Bug $1"
+}
