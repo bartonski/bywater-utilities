@@ -25,13 +25,27 @@ From fines.pl:
         -o --out:  ouput directory for logs (defaults to env or /tmp if !exist)
         -v --verbose
 
-For git sites, run
+### For git sites, run
 
     sudo su - koha
     $HOME/kohaclone/misc/cronjobs/fines.pl --verbose --log
    
 Output will be written to a file whose naming convention is `koha_YYYY-MM-DD.log`. By default, the file will be in `tmp`. If the command above were run on July 31, 2014, the log file would be `/tmp/koha_2014-07-31.log`
 
+### For package sites 
+
+    grep fine /etc/cron.daily/koha-common
+    sudo koha-shell INSTANCE
+
+The output from the grep will probably look like this:
+
+    koha-foreach --enabled /usr/share/koha/bin/cronjobs/fines.pl > /dev/null
+
+Call fines.pl from the path determined by the grep, e.g.
+
+    /usr/share/koha/bin/cronjobs/fines.pl  --verbose --log
+
+ 
 ## Known issues
 
 * `fines.pl --out DIRECTORY_NAME` will fail if `DIRECTORY_NAME` does not exist.
