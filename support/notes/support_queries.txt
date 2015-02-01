@@ -35,3 +35,12 @@ query for OCLC number
 sudo koha-mysql hillwood <<< "select ExtractValue( marcxml, '//datafield[@tag=035]/subfield[@code=\"a\"]') from biblioitems" | tr -d '\r'
 
 Add \G to the end of a query (rather than ';') to have the query display vertically rather than horizontally.
+
+INSERT INTO table_name (column1, column2, column3 ... )
+VALUES (value1, value2, value3 ...)
+
+e.g.
+
+INSERT INTO  message_transports (message_attribute_id , message_transport_type , is_digest , letter_module , letter_code , branchcode)
+VALUES ( 4, 'email', 0, 'reserves', 'HOLD', '' );
+
