@@ -21,7 +21,8 @@ package sites:
 * sudo koha-shell <instance>
 * cd $HOME
 * ls ./run_rebuild.sh
-* run using 'at', as above
+* due to file locking, package sites shouldn't run at midnight straight up. Use the following:
+echo $HOME/run_rebuild.sh | at midnight + 5 minutes
 2) If ./run_rebuils.sh isn't available
 * exit koha-hsell
 * test permissions by running the following at command:
