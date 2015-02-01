@@ -214,7 +214,12 @@ The unfortunate consequence of the organic nature of Notices and Slips is that y
 |                   |                                |                                             | in advance\_notices.pl.|
 |                   |                                |                                             | \<item\> and  \</item\>|
 |                   |                                |                                             | tags will expand fields|
-|                   |                                |                                             | from items table:      |
+|                   |                                |                                             | from the following     |
+|                   |                                |                                             | tables: <br />         |
+|                   |                                |                                             | items   <br />         |
+|                   |                                |                                             | bibio   <br />         |
+|                   |                                |                                             | biblioitems <br />     |
+|                   |                                |                                             | issues  <br />         |
 |                   |                                |                                             | \<item\> items.barcode |
 |                   |                                |                                             | \</item\> will show the|
 |                   |                                |                                             | overdue item's barcode |
@@ -246,12 +251,6 @@ The unfortunate consequence of the organic nature of Notices and Slips is that y
 +-------------------+--------------------------------+---------------------------------------------+------------------------+
 | REJECTED          | C4/Suggestions.pm              | N/A                                         | Yes                    |
 +-------------------+--------------------------------+---------------------------------------------+------------------------+
-| PREDUE\_PHONE     | TalkingTech\_itiva\_outbound   | N/A                                         | No                     |
-+-------------------+--------------------------------+---------------------------------------------+------------------------+
-| OVERDUE\_PHONE    | TalkingTech\_itiva\_outbound   | N/A                                         | No                     |
-+-------------------+--------------------------------+---------------------------------------------+------------------------+
-| HOLD\_PHONE       | TalkingTech\_itiva\_outbound   | N/A                                         | No                     |
-+-------------------+--------------------------------+---------------------------------------------+------------------------+
 | OPAC\_REG\_VERIFY | opac/opac-memberentry.pl       | N/A                                         | No                     |
 +-------------------+--------------------------------+---------------------------------------------+------------------------+
 
@@ -261,11 +260,11 @@ The unfortunate consequence of the organic nature of Notices and Slips is that y
 +===================+========================+
 | DUE               | Yes                    |
 +-------------------+------------------------+
-| DUEDGST           | No                     |
+| DUEDGST           | Yes                    |
 +-------------------+------------------------+
 | PREDUE            | Yes                    |
 +-------------------+------------------------+
-| PREDUEDGST        | No                     |
+| PREDUEDGST        | Yes                    |
 +-------------------+------------------------+
 | ODUE\*            | Yes                    |
 +-------------------+------------------------+
@@ -291,13 +290,7 @@ The unfortunate consequence of the organic nature of Notices and Slips is that y
 +-------------------+------------------------+
 | REJECTED          | Yes                    |
 +-------------------+------------------------+
-| PREDUE\_PHONE     | No                     |
-+-------------------+------------------------+
-| OVERDUE\_PHONE    | No                     |
-+-------------------+------------------------+
-| HOLD\_PHONE       | No                     |
-+-------------------+------------------------+
-| OPAC\_REG\_VERIFY | No                     |
+| OPAC\_REG\_VERIFY | Unknown                |
 +-------------------+------------------------+
 
 ## How do we make this better (A Fist Full of Dollars)
