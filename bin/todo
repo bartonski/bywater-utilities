@@ -76,16 +76,17 @@ set -x
     sed -i 's/\\([Ee]dit)/\t/' $items           ## Un-escape '\Edit'.
     chopline='s/[[:space:]]\+\+[0-9]\+[[:space:]]\+\(Support\|Migrations\).*//'
     add_semicolons='s|^\([[:digit:]]\+\)|\1;|'
+    change_ticket_numbers='s|^\([[:digit:]]\+\)|@rt \1|'
     change_colons='s/:/;/g'
     escape_underscores='s/_/\\_/'
-    sed -i "$chopline; $add_semicolons; $change_colons; $escape_underscores" $items
+    sed -i "$chopline; $add_semicolons; $change_ticket_numbers; $change_colons; $escape_underscores" $items
 set +x
 }
 
 preformat() {
     local infile=$1
     local outfile=$2
-    urlify='s|^\([[:digit:]]\+\)|<a href="http://ticket.bywatersolutions.com/Ticket/Display.html?id=\1">\1</a>|g'
+    urlify='s|@rt \([[:digit:]]\+\)|<a href="http://ticket.bywatersolutions.com/Ticket/Display.html?id=\1">@rt \1</a>|g'
     sed "$urlify" $1 > $outfile
     perl -i $BIN/semicolon_to_table.pl $outfile
 }
