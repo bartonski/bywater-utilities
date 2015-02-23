@@ -177,8 +177,8 @@ my $duplicates_same_date_query =
     my_description, 
     a.description as 'a.description',
     b.description as 'b.description',
-    a.accountlines_id as 'a.accountlines_id'
-    b.accountlines_id as 'b.accountlines_id'
+    a.accountlines_id as 'a.accountlines_id',
+    b.accountlines_id as 'b.accountlines_id',
     borrowernumber,
     itemnumber
 from 
