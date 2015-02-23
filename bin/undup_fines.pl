@@ -155,7 +155,8 @@ from temp_duplicate_fines
 group by borrowernumber, itemnumber, my_description having 
 count(*) > ?";
 
-my $temp_fines_having_count_greater_than_sth = $global_dbh->prepare( $temp_fines_having_count_greater_than_query );
+my $temp_fines_having_count_greater_than_sth = 
+    $global_dbh->prepare( $temp_fines_having_count_greater_than_query );
 
 my $singleton_get_bad_accountlines_id_query =
 "select
@@ -390,7 +391,6 @@ SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashr
         
 }
 
-# TODO: Check for fines having count greater than 3... This shouldn't happen, but stranger things have happened.
 $temp_fines_having_count_greater_than_sth->execute(2);
 MULTIPLES: while ( my $multiple = $temp_fines_having_count_greater_than_sth->fetchrow_hashref() ) {
     my @key = ( $multiple->{borrowernumber}, $multiple->{itemnumber} , $multiple->{my_description} ); 
@@ -433,6 +433,7 @@ END {
     }
 }
 
+# TODO: Update POD
 exit 0;
 
 =head1 NAME
@@ -486,7 +487,7 @@ If there are duplicate fines:
         Delete the BAD fine.
         If the fine has been paid: 
            reduce the amount_outstanding on the corresponding GOOD fine.
-        If the amount_outstanding on the GOOD fine is negative, set it to 0, and create a debit.
+        If the amount_outstanding on the GOOD fine is negative, set it to 0, and send a warning to the logs.
 
 Fines are considered duplicates if the following conditions are true:
 
@@ -518,16 +519,30 @@ The temporary table will have the following information:
 
 There should only be two rows for each description -- timeformat will be 0 or 1.
 
-For each entry with correct_timeformat = 0
-   if amount_paid = 0 
-      delete entry from accountlines
-   elsif amount_paid < other amout outstanding
-      delete entry from accountlines
-      decrease otther amount outstanding
-   else
-      delete entry from accountlines
-      set other amount outstanding to 0
-      credit account by the difference
+    For each fine matching the criteria above
+        If borrowernumber, description or itemnumber is missing:
+            Send a  warning to the logs if
+                The description is BAD or
+                The description is GOOD, but might be paired with a BAD description.
+        If borrowernumber, description or itemnumber are all present
+            Add row to the temporary table.
+    For each pair of rows in the temporary table having the same borrowernumber, my_description and itemnumber
+        For each pair, there must be a newer and an older fine. If the fines have the same date, we don't know which to keep; these must be resolved by hand.
+        Run a query to find which data to keep:
+            Amount
+            Amount outstanding
+            Description (this will always be the 'Good' description)
+            Accounttype
+            Date (Always the earlier of the pair of dates)
+            Lastincrement
+        If the amount paid is more than the amount, set Amount_outstanding to 0, and log a warning.
+    For singletons (Fines without a duplicate)
+        If the singleton has a 'Bad' description, update it.
+    Check for multiple fines having the same borrowernumber, my_description and itemnumber. There shouldn't be any.
+    We loop throught the list of data to keep
+        Update the record of data to keep
+        Delete the other record
+
 
 =head1 OPTIONS
 
