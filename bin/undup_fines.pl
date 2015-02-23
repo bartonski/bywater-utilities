@@ -373,6 +373,10 @@ print "\nUpdating singletons\n";
 $i=0;
 $temp_fines_having_count_sth->execute(1);
 SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashref() ) {
+    $i++;
+    my $newline = ( $i % 100 ) ? "" : "\r$i";
+    print ".$newline";
+
     my @key = ( $singleton->{borrowernumber}, $singleton->{itemnumber} , $singleton->{my_description} ); 
     my $key = join( '', @key );
     my $my_description =  $singleton->{my_description};
@@ -412,7 +416,13 @@ MULTIPLES: while ( my $multiple = $temp_fines_having_count_greater_than_sth->fet
             );
 }
 
+print "\nUpdating duplicates\n";
+$i=0;
 UPDATE_FINES: for my $key ( keys %data_to_keep ) {
+    $i++;
+    my $newline = ( $i % 100 ) ? "" : "\r$i";
+    print ".$newline";
+
     my $accountlines_id = $data_to_keep{$key}->{accountlines_id};
     my @update_accountlines_args = (
             $data_to_keep{$key}->{description},
