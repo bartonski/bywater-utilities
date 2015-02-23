@@ -277,21 +277,21 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
 
     unless ( $correct_timeformat ) {
         $bad_description{$my_description} = 1;
-        log_warn(   "Accountlines description '" 
-                    . $my_description 
-                    . "' matches record with undefined fields. Please inspect."
-                  , @current_fine_record );
         
+        if ($missing_good_description{$my_description}) {
+            log_warn(   "Accountlines description '" 
+                        . $my_description 
+                        . "' matches record with undefined fields. Please inspect."
+                      , @current_fine_record );
+            # We want to log here if we can, but we'll also need to double-check
+            # when we're running through the singletons. In order not to
+            # double-log, we'll un-set the flag for records that we've logged here.
+            $missing_good_description{$my_description} = 0;
+        }
     }
     
     my @undefined_fields = ( keys %undefined_field );
     if ( scalar @undefined_fields > 0 ) {
-        #  TODO: This logic needs to be documented in perldoc
-        #  We don't want to clog the logs with warnings about fines what have the correct
-        #  time format. We only care if there's a possibility that they're a duplicate.
-        #  We'll only log if it matches the currently known bad timeformats, and
-        #  we'll also put it into a list of undefined good time formats. If either of
-        #  these match, we'll log it.
         my $log_correct_timeformat = 0;
         if( $correct_timeformat ) {
             # TODO: We're not doing anything with %missing_good_description.
@@ -375,12 +375,18 @@ $temp_fines_having_count_sth->execute(1);
 SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashref() ) {
     my @key = ( $singleton->{borrowernumber}, $singleton->{itemnumber} , $singleton->{my_description} ); 
     my $key = join( '', @key );
+    my $my_description =  $singleton->{my_description};
 
     $singleton_get_bad_accountlines_id_sth->execute( @key );
     my $bad_singleton = $singleton_get_bad_accountlines_id_sth->fetchrow_hashref();
     
-    # TODO: query for singletons with bad description
     if( defined $bad_singleton->{accountlines_id} ) {
+        if ($missing_good_description{$my_description}) {
+            log_warn(   "Accountlines description '" 
+                        . $my_description 
+                        . "' matches record with undefined fields. Please inspect." );
+            next SINGLETONS;
+        }
         log_info( "Update description: ", 
                   "Description:", $singleton->{my_description},
                   "Accountlines_id", $bad_singleton->{accountlines_id}  );
@@ -422,6 +428,7 @@ UPDATE_FINES: for my $key ( keys %data_to_keep ) {
     log_info( $update_accountlines_query, @update_accountlines_args );
     if( $opt_do_eet ) {
         $update_accountlines_sth->execute( @update_accountlines_args );
+        # TODO: delete bad fine
     }
 }
 
