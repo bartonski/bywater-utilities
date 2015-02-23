@@ -172,6 +172,28 @@ my $singleton_get_bad_accountlines_id_sth = $global_dbh->prepare( $singleton_get
 
 ## TODO: need to test for duplicate fines that have the same date. This program won't be able to handle those.
 
+my $duplicates_same_date_query =
+"select 
+    my_description, 
+    a.description as 'a.description',
+    b.description as 'b.description',
+    a.accountlines_id as 'a.accountlines_id'
+    b.accountlines_id as 'b.accountlines_id'
+    borrowernumber,
+    itemnumber
+from 
+    temp_duplicate_fines a
+    inner join temp_duplicate_fines b using (borrowernumber, itemnumber, my_description) 
+where 
+    a.date = b.date
+    and a.description != b.description
+    and a.borrowernumber = ? 
+    and a.itemnumber = ?  
+    and a.my_description = ?
+";
+
+my $duplicates_same_date_sth = $global_dbh->prepare( $duplicates_same_date_query );
+
 my $data_to_keep_query = 
 "select 
     a.my_description, 
@@ -366,6 +388,10 @@ PAIRS: while ( my $duplicate = $temp_fines_having_count_sth->fetchrow_hashref() 
             , amount => $keep->{amount}
             , amountoutstanding => $amountoutstanding
         };
+    }
+    $duplicates_same_date_sth->execute( @key );
+    WARNDATA: while (my $warndata = $duplicates_same_date_sth->fetchrow_hashref() ) {
+        log_warn( "Duplicates with the same date -- these will need to be handled manually", $warndata );
     }
 }
 
