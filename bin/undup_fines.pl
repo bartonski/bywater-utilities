@@ -417,7 +417,7 @@ SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashr
         my $description = $singleton->{my_description} . $time_due_correct;
         log_info( "Update description: ", 
                   "Old description", $singleton->{description}, 
-                  "New description", $description
+                  "New description", $description,
                   "Accountlines_id", $bad_singleton->{accountlines_id}  );
         if( $opt_do_eet ) {
             # TODO: run update for bad descriptons here.
@@ -467,6 +467,7 @@ UPDATE_FINES: for my $key ( keys %data_to_keep ) {
     }
 }
 
+print "\n";
 
 END {
     unless( $opt_help ) {
