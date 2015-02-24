@@ -414,8 +414,10 @@ SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashr
                         . "' matches record with undefined fields. Please inspect." );
             next SINGLETONS;
         }
+        my $description = $singleton->{my_description} . $time_due_correct;
         log_info( "Update description: ", 
-                  "Description:", $singleton->{my_description},
+                  "Old description", $singleton->{description}, 
+                  "New description", $description
                   "Accountlines_id", $bad_singleton->{accountlines_id}  );
         if( $opt_do_eet ) {
             # TODO: run update for bad descriptons here.
