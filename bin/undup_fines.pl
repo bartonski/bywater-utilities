@@ -102,7 +102,7 @@ WHERE accounttype in ('F', 'FU', 'O', 'M')
   AND ( description like '%$time_due_correct' OR description like '%$time_due_fixme');"
 );
 
-my $insert_temp_sth = $glmbal_dbh->prepare( 
+my $insert_temp_sth = $global_dbh->prepare( 
 "INSERT INTO $temp_table_name ( 
     accountlines_id, 
     description, 
