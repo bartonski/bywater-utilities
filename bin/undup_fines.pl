@@ -102,7 +102,7 @@ WHERE accounttype in ('F', 'FU', 'O', 'M')
   AND ( description like '%$time_due_correct' OR description like '%$time_due_fixme');"
 );
 
-my $insert_temp_sth = $global_dbh->prepare( 
+my $insert_temp_sth = $glmbal_dbh->prepare( 
 "INSERT INTO $temp_table_name ( 
     accountlines_id, 
     description, 
@@ -119,6 +119,9 @@ my $insert_temp_sth = $global_dbh->prepare(
     lastincrement
 ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );"
 );
+
+my $count_timeformat_query = "select count(*) as 'count' from $temp_table_name where correct_timeformat = ?";
+my $count_timeformat_sth = $global_dbh->prepare( $count_timeformat_query );
 
 my $temp_fines_having_count_query =
 "select 
@@ -339,6 +342,15 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
         $fine->{lastincrement}
     );
 }
+
+$count_timeformat_sth->execute( 1 );
+my $good = $count_timeformat_sth->fetchrow_hashref();
+
+$count_timeformat_sth->execute( 0 );
+my $bad  = $count_timeformat_sth->fetchrow_hashref();
+
+log_info( "Good fines count:", $good->{count} );
+log_info( "Bad fines count:" , $bad->{count}  );
 
 print "\nCreating list of data to keep\n";
 
