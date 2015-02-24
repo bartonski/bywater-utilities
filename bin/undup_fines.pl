@@ -209,7 +209,8 @@ my $data_to_keep_query =
     b.amount as amount,
     b.amount_paid as second_amount_paid,
     borrowernumber,
-    itemnumber
+    itemnumber,
+    a.accountlines_id as 'delete_accountlines_id'
 from 
     temp_duplicate_fines a
     inner join temp_duplicate_fines b using (borrowernumber, itemnumber, my_description) 
@@ -357,6 +358,7 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
 print "\nCreating list of data to keep\n";
 
 my %data_to_keep;
+my %data_to_delete;
 
 $i = 0;
 $temp_fines_having_count_sth->execute(2);
@@ -393,6 +395,9 @@ PAIRS: while ( my $duplicate = $temp_fines_having_count_sth->fetchrow_hashref() 
             , lastincrement => $keep->{lastincrement}
             , amount => $keep->{amount}
             , amountoutstanding => $amountoutstanding
+        };
+        $data_to_delete{ $key } = {
+            accountlines_id => $keep->{delete_accountlines_id}
         };
     }
     $duplicates_same_date_sth->execute( @key );
@@ -471,9 +476,10 @@ UPDATE_FINES: for my $key ( keys %data_to_keep ) {
         );
 
     log_info( $update_accountlines_query, @update_accountlines_args );
+    log_info( $delete_accountliens_query, $data_to_delete{$key}->{accountlines_id} );
     if( $opt_do_eet ) {
         $update_accountlines_sth->execute( @update_accountlines_args );
-        # TODO: delete bad fine
+        $delete_accountlines_sth->execute( $data_to_delete{$key}->{accountlines_id} );
     }
 }
 
