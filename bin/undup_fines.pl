@@ -170,8 +170,6 @@ where correct_timeformat = 0
 my $singleton_get_bad_accountlines_id_sth = $global_dbh->prepare( $singleton_get_bad_accountlines_id_query );
 
 
-## TODO: need to test for duplicate fines that have the same date. This program won't be able to handle those.
-
 my $duplicates_same_date_query =
 "select 
     my_description, 
@@ -316,7 +314,6 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
     if ( scalar @undefined_fields > 0 ) {
         my $log_correct_timeformat = 0;
         if( $correct_timeformat ) {
-            # TODO: We're not doing anything with %missing_good_description.
             $log_correct_timeformat = 1 if $bad_description{$my_description};
             $missing_good_description{$my_description} = 1;
         }
@@ -476,7 +473,6 @@ END {
     }
 }
 
-# TODO: Update POD
 exit 0;
 
 =head1 NAME
@@ -487,6 +483,39 @@ undup_fines.pl
 
 ./undup_fines.pl [-c] [-d[=0]] [-n[=0]] [-r[=REPORT FILE NAME]] 
 ./undup_fines.pl [-h]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-c|--commit>
+
+undup_fines.pl will not make any changes to the fines table unless the
+'-c' flag is specified.
+
+=item B<-d|--drop>
+
+Drop temp table after program has completed. This is the default option,
+use '-d=0' if you do not wish to drop the table.
+
+=item B<-n|--new_table>
+
+Create temp table when the program starts. This this is the default
+option, use '-n=0' if you do not wish to create the table for faster
+startup. The table B<must> exist for the program to run. This can be
+accomplished by running the program with the the '-d=0' option.
+
+=item B<-r|--report_file>
+
+The program will create a CSV file containing a list of the actions
+taken. The file name defaults to '~/undup_fines_report.csv' if not
+specified.
+
+=item B<-h|--help>
+
+Print this help message and exit.
+
+=back
 
 =head1 DESCRIPTION
 
@@ -560,7 +589,8 @@ The temporary table will have the following information:
     amount_paid            | amount - amountoutstanding
     correct_timeformat     | 0 for 'BAD', 1 for 'GOOD'.
 
-There should only be two rows for each description -- timeformat will be 0 or 1.
+There should only be at most two rows for each description -- 
+timeformat will be 0 or 1.
 
     For each fine matching the criteria above
         If borrowernumber, description or itemnumber is missing:
@@ -586,37 +616,42 @@ There should only be two rows for each description -- timeformat will be 0 or 1.
         Update the record of data to keep
         Delete the other record
 
-
-=head1 OPTIONS
+=head1 WARNINGS
 
 =over 8
 
-=item B<-c|--commit>
+=item "Accountlines description $my_description matches record with undefined fields. Please inspect."
 
-undup_fines.pl will not make any changes to the fines table unless the
-'-c' flag is specified.
+This program only makes changes to fines that have the incorrect date
+format. If one of these fines is missing borrowernumber, description
+or itemnumber, this doesn't matter unless the item matches a fine that
+does have an incorrect date format. This warning is an indication that
+there is a record with correct date format that is missing one of these
+fields. In this case the duplicates must be cleared manually.
 
-=item B<-d|--drop>
+=item "Accountlines record is missing [borrowernumber, description, itemnumber]. Please inspect."
 
-Drop temp table after program has completed. This is the default option,
-use '-d=0' if you do not wish to drop the table.
+A fine with incorrect time format is missing borrowernumber, description
+or itemnumber fields. This must be fixed manually.
 
-=item B<-n|--new_table>
+=item "Amount paid is greater than amount outstanding"
 
-Create temp table when the program starts. This this is the default
-option, use '-n=0' if you do not wish to create the table for faster
-startup. The table B<must> exist for the program to run. This can be
-accomplished by running the program with the the '-d=0' option.
+This program does not automatically create credits if the amount paid
+is more than the fines incurred. The duplicate fines will be fixed,
+but it is up to the library to decide how to credit over-payments.
 
-=item B<-r|--report_file>
+=item "Duplicates with the same date -- these will need to be handled manually"
 
-The program will create a CSV file containing a list of the actions
-taken. The file name defaults to '~/undup_fines_report.csv' if not
-specified.
+The program must be able to determine which came first: the BAD fine
+or the GOOD. If both fines records were created on the same day,
+the program cannot determine this, and the duplicate fines must be
+cleared manually.
 
-=item B<-h|--help>
+=item "There are N records with the following borrowernumber, itemnumber and description" 
 
-Print this help message and exit.
+You shuold not see this message -- there should only be pairs of fines,
+one GOOD and one BAD. If you do see this message, the program has failed
+a sanity check, and the fines must be cleared by hand.
 
 =back
 
