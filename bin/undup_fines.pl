@@ -221,6 +221,15 @@ where
 ";
 my $data_to_keep_sth = $global_dbh->prepare( $data_to_keep_query );
 
+my $update_singleton_query = 
+"update accountlines
+set
+    description       = ?,
+    note              = ?
+where accountlines_id = ?";
+
+my $update_singleton_sth = $global_dbh->prepare( $update_singleton_query );
+
 my $update_accountlines_query = 
 "update accountlines
 set
@@ -415,15 +424,16 @@ SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashr
             next SINGLETONS;
         }
         my $description = $singleton->{my_description} . $time_due_correct;
-        log_info( "Update description: ", 
-                  "Old description", $singleton->{description}, 
-                  "New description", $description,
-                  "Accountlines_id", $bad_singleton->{accountlines_id}  );
+        my @update_singleton_args = (
+              $description,
+              "Updated by fines de-duplicator",
+              $bad_singleton->{accountlines_id} 
+        );
+        log_info( $update_singleton_query, @update_singleton_args );
         if( $opt_do_eet ) {
-            # TODO: run update for bad descriptons here.
+            $update_singleton_sth->execute( @update_singleton_args );
         }
     }
-        
 }
 
 $temp_fines_having_count_greater_than_sth->execute(2);
