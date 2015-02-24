@@ -391,7 +391,7 @@ PAIRS: while ( my $duplicate = $temp_fines_having_count_sth->fetchrow_hashref() 
     }
     $duplicates_same_date_sth->execute( @key );
     WARNDATA: while (my $warndata = $duplicates_same_date_sth->fetchrow_hashref() ) {
-        log_warn( "Duplicates with the same date -- these will need to be handled manually", $warndata );
+        log_warn( "Duplicates with the same date -- these will need to be handled manually",  %$warndata  );
     }
 }
 
