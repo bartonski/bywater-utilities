@@ -120,20 +120,6 @@ my $insert_temp_sth = $global_dbh->prepare(
 ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );"
 );
 
-# There should only be two rows for each description -- timeformat will be 0 or 1.
-my $count_fines_sth = $global_dbh->prepare(
-"SELECT 
-    count(*) as count
-FROM $temp_table_name
-WHERE my_description = ?"
-);
-
-my $bad_fine_sth = $global_dbh->prepare(
-"SELECT * 
-FROM $temp_table_name
-WHERE correct_timeformat = 0"
-);
-
 my $temp_fines_having_count_query =
 "select 
     borrowernumber, 
@@ -168,7 +154,6 @@ where correct_timeformat = 0
   and my_description = ?";
 
 my $singleton_get_bad_accountlines_id_sth = $global_dbh->prepare( $singleton_get_bad_accountlines_id_query );
-
 
 my $duplicates_same_date_query =
 "select 
