@@ -476,7 +476,7 @@ UPDATE_FINES: for my $key ( keys %data_to_keep ) {
         );
 
     log_info( $update_accountlines_query, @update_accountlines_args );
-    log_info( $delete_accountliens_query, $data_to_delete{$key}->{accountlines_id} );
+    log_info( $delete_accountlines_query, $data_to_delete{$key}->{accountlines_id} );
     if( $opt_do_eet ) {
         $update_accountlines_sth->execute( @update_accountlines_args );
         $delete_accountlines_sth->execute( $data_to_delete{$key}->{accountlines_id} );
