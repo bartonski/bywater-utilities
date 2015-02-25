@@ -16,6 +16,7 @@
 #   tag
 #   z3950_attribute
 #   subfields [Optional] 
+#   menu_title
 # 
 # The 'subfields' element is an array, containing all
 # possible subfields.
@@ -30,12 +31,14 @@
 #       - c
 #     tag: 510
 #     z3950_attribute: 1068
+#     menu_title: Bibliographic Reference
 #   - index_name: publisher_location
 #     index_type: w
 #     subfields:
 #       - e
 #     tag: 260
 #     z3950_attribute: 59
+#     menu_title: Publisher Location
 # 
 # The program will then create the following files:
 #
@@ -78,10 +81,10 @@ my %templates = (
 ',
 
 'biblio-koha-indexdefs.xml' =>
-'[% FOREACH index IN indexes %][% IF index.subfields %][% FOREACH subfield IN index.subfields %]  <index_subfields xmlns="http://www.koha-community.org/schemas/index-defs" tag="[% index.tag %]" subfields="[% subfield %]">
+'[% FOREACH index IN indexes %][% IF index.subfields %][% FOREACH subfield IN index.subfields %]  <index_subfields tag="[% index.tag %]" subfields="[% subfield %]">
     <target_index>[% index.index_name %]:[% index.index_type %]</target_index>
   </index_subfields>
-[% END %][%END%]  <index_data_field xmlns="http://www.koha-community.org/schemas/index-defs" tag="[% index.tag %]">
+[% END %][%END%]  <index_data_field tag="[% index.tag %]">
     <target_index>[% index.index_name %]:[% index.index_type %]</target_index>
   </index_data_field>
 [%END%]
