@@ -30,27 +30,29 @@ check_dependency() {
 check_dependency /usr/bin/pgrep
 check_dependency /usr/bin/pkill
 
-if [ -f /usr/sbin/koha_list ]
+if [ -e /usr/sbin/koha-list ]
 then # Set up for git sites
-    STOPCMD="koha-foreach --enabled koha-stop-sip"
-    STARTCMD="koha-foreach --enabled koha-start-sip"
+    STOPCMD='for instance in $(sudo koha-list --enabled); do sudo koha-stop-sip $instance 2>&1 > /dev/null; done'
+    STARTCMD='for instance in $(sudo koha-list --enabled); do sudo koha-start-sip $instance 2>&1 > /dev/null; done'
 else # Set up for package sites
     check_dependency "$HOME/sip-daemon.sh"
-    STOPCMD="$HOME/sip-daemon.sh stop"
-    STARTCMD="$HOME/sip-daemon.sh start"
+    STOPCMD="sudo $HOME/sip-daemon.sh stop 2>&1 > /dev/null"
+    STARTCMD="sudo $HOME/sip-daemon.sh start 2>&1 > /dev/null"
 fi
 
 
 # Request a graceful shutdown of all running SIP processes
 
-$STOPCMD
+eval "$STOPCMD"
 
 sleep 10;
 
 for pid in $(pgrep -f SIP)
 do
-    kill $pid || kill -9 $pid
+    sudo kill $pid || sudo kill -9 $pid
 done
+
+sleep 10;
 
 if process="$(pgrep -f SIP)"
 then
@@ -60,9 +62,9 @@ fi
 
 # Restart SIP
 
-$STARTCMD
+eval "$STARTCMD"
 
-if ! pgrep -c -f SIP
+if ! pgrep -c -f SIP 2>&1 > /dev/null
 then
     echo "$0: SIP did not re-start successfully."
     exit 1
