@@ -13,6 +13,7 @@ my $opt_do_eet=0;
 my $opt_drop=1;
 my $opt_new_table=1;
 my $opt_report_file="$ENV{HOME}/undup_fines_report.csv";
+my $opt_log_level_string='INFO';
 my $opt_help=0;
 
 GetOptions (
@@ -20,10 +21,21 @@ GetOptions (
     , 'd|drop=s'        => \$opt_drop
     , 'n|new_table=s'   => \$opt_new_table
     , 'r|report_file=s' => \$opt_report_file
+    , 'l|log_level=s'   => \$opt_log_level_string
     , 'h|help'          => \$opt_help
 );
 
 pod2usage(1) and exit if $opt_help;
+
+my %global_log_level_lookup = (
+      DEBUG  => 0
+    , INFO   => 1
+    , WARN   => 2
+    , ERROR  => 4
+    , FATAL  => 8
+);
+
+my $global_log_level = $global_log_level_lookup{$opt_log_level_string};
 
 my $global_csv = Text::CSV_XS->new ({ binary => 1, eol => "\n" })
     or die "Cannot use CSV: " . Text::CSV->error_diag ();
@@ -45,7 +57,8 @@ log_info( "internal: '\$time_due_fixme'", $time_due_fixme );
 my $temp_table_name   = 'temp_duplicate_fines';
 my $temp_table_drop   = "DROP TABLE IF EXISTS $temp_table_name;";
 
-print "Creating temp table '$temp_table_name'";
+print "Creating temp table '$temp_table_name'\n";
+log_info( "Creating temp table '$temp_table_name'");
 
 # Note that my_description must be varchar() in order to be part of the
 # index, and reuires a maximum length.  used  the following query to find
@@ -88,11 +101,13 @@ if( $opt_new_table ) {
     correct_timeformat    int,
     accounttype           varchar(5),
     lastincrement         decimal(28,6),
+    missing_fields        BOOLEAN, 
     KEY accountlines_id   (accountlines_id),
     KEY fine_id           ( my_description, borrowernumber,  itemnumber )
 ) ENGINE=InnoDB CHARSET=utf8;"; 
 
     $global_dbh->do( $temp_create_statement );
+
 }
 
 my $fines_sth = $global_dbh->prepare(
@@ -116,12 +131,21 @@ my $insert_temp_sth = $global_dbh->prepare(
     accountno,
     itemnumber,
     accounttype,
-    lastincrement
-) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );"
+    lastincrement,
+    missing_fields
+) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );"
 );
 
-my $count_timeformat_query = "select count(*) as 'count' from $temp_table_name where correct_timeformat = ?";
+my $count_timeformat_query = "select count(*) as 'count' from $temp_table_name where correct_timeformat = ? and missing_fields = ?";
 my $count_timeformat_sth = $global_dbh->prepare( $count_timeformat_query );
+
+
+my $first_timeformat_query = "select date from $temp_table_name where correct_timeformat = ? order by date ASC limit 1";
+my $first_timeformat_sth = $global_dbh->prepare( $first_timeformat_query );
+
+my $last_timeformat_query = "select date from $temp_table_name where correct_timeformat = ? order by date DESC limit 1";
+my $last_timeformat_sth = $global_dbh->prepare( $last_timeformat_query );
+
 
 my $temp_fines_having_count_query =
 "select 
@@ -213,8 +237,7 @@ my $data_to_keep_sth = $global_dbh->prepare( $data_to_keep_query );
 my $update_singleton_query = 
 "update accountlines
 set
-    description       = ?,
-    note              = ?
+    description       = ?
 where accountlines_id = ?";
 
 my $update_singleton_sth = $global_dbh->prepare( $update_singleton_query );
@@ -227,8 +250,7 @@ set
     accounttype       = ?,
     lastincrement     = ?,
     amount            = ?,
-    amountoutstanding = ?,
-    note              = ?
+    amountoutstanding = ?
 where accountlines_id = ?";
 
 my $update_accountlines_sth = $global_dbh->prepare( $update_accountlines_query );
@@ -239,19 +261,31 @@ WHERE accountlines_id = ?";
 
 my $delete_accountlines_sth = $global_dbh->prepare( $delete_accountlines_query );
 
-sub log_warn {
-    my $logdata = [ "Warning", @_ ];
+sub _log {
+    my $log_level = shift;
+    return if( $global_log_level_lookup{ $log_level } < $global_log_level ); 
+    my %log_strings = (
+          DEBUG  => 'Debug'
+        , INFO   => 'Info'
+        , WARN   => 'Warning'
+        , ERROR  => 'ERROR'
+        , FATAL  => '***FATAL***'
+    );
+    my $logdata = [ $log_strings{$log_level}, @_ ];
     $global_csv->print ( $global_report_fh, $logdata );
 }
 
-sub log_info {
-    my $logdata = [ "Info", @_ ];
-    $global_csv->print ( $global_report_fh, $logdata );
-}
+sub log_debug { _log( 'DEBUG', @_ ) }
+
+sub log_info { _log( 'INFO', @_ ) }
+
+sub log_warn { _log( 'WARN', @_ ) }
+
 
 ############################ Create temp table ###############################
 
-print "Creating temp table '$temp_table_name'\n";
+print "Populating temp table '$temp_table_name'\n";
+log_info( "Populating temp table '$temp_table_name'\n" );
 
 my %missing_good_description;
 my %bad_description;
@@ -293,38 +327,8 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
         $undefined_field{$f} = 1 if not defined($fine->{$f});
     }
 
-    unless ( $correct_timeformat ) {
-        $bad_description{$my_description} = 1;
-        
-        if ($missing_good_description{$my_description}) {
-            log_warn(   "Accountlines description '" 
-                        . $my_description 
-                        . "' matches record with undefined fields. Please inspect."
-                      , @current_fine_record );
-            # We want to log here if we can, but we'll also need to double-check
-            # when we're running through the singletons. In order not to
-            # double-log, we'll un-set the flag for records that we've logged here.
-            $missing_good_description{$my_description} = 0;
-        }
-    }
-    
     my @undefined_fields = ( keys %undefined_field );
-    if ( scalar @undefined_fields > 0 ) {
-        my $log_correct_timeformat = 0;
-        if( $correct_timeformat ) {
-            $log_correct_timeformat = 1 if $bad_description{$my_description};
-            $missing_good_description{$my_description} = 1;
-        }
-        if( $correct_timeformat == 0 || $log_correct_timeformat == 1 ) {
-            log_warn(   "Accountlines record is missing " 
-                        . join ( ', ' , @undefined_fields ) 
-                        . ". Please inspect."
-                        , @current_fine_record
-                   ); 
-            $bad_description{$my_description} = 1;
-        }
-        next FINE;
-    }
+    my $missing_fields = ( scalar @undefined_fields > 0 );
 
     $insert_temp_sth->execute(
         $fine->{accountlines_id}, # accountlines_id 
@@ -339,20 +343,47 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
         $fine->{accountno},
         $fine->{itemnumber},
         $fine->{accounttype},
-        $fine->{lastincrement}
+        $fine->{lastincrement},
+        $missing_fields           # missing_fields
     );
 }
 
-$count_timeformat_sth->execute( 1 );
+$count_timeformat_sth->execute( 1, 0 ); 
 my $good = $count_timeformat_sth->fetchrow_hashref();
 
-$count_timeformat_sth->execute( 0 );
+$count_timeformat_sth->execute( 1, 1 ); 
+my $maybe_good = $count_timeformat_sth->fetchrow_hashref();
+
+$count_timeformat_sth->execute( 0, 0 );
 my $bad  = $count_timeformat_sth->fetchrow_hashref();
 
-log_info( "Good fines count:", $good->{count} );
-log_info( "Bad fines count:" , $bad->{count}  );
+$count_timeformat_sth->execute( 0, 1 );
+my $maybe_bad  = $count_timeformat_sth->fetchrow_hashref();
+
+log_info( "Number of good fines               :" , $good->{count}       );
+log_info( "Number of good fines missing fileds:" , $maybe_good->{count} );
+log_info( "Number of bad fines                :" , $bad->{count}        );
+log_info( "Number of bad fines missing fields :" , $maybe_bad->{count}  );
+
+$first_timeformat_sth->execute(1);
+my $first_good = $first_timeformat_sth->fetchrow_hashref();
+
+$last_timeformat_sth->execute(1);
+my $last_good = $last_timeformat_sth->fetchrow_hashref();
+
+$first_timeformat_sth->execute(0);
+my $first_bad = $first_timeformat_sth->fetchrow_hashref();
+
+$last_timeformat_sth->execute(0);
+my $last_bad = $last_timeformat_sth->fetchrow_hashref();
+
+log_info( "Date of first good time format:" , $first_good->{date} );
+log_info( "Date of last good time format:"  , $last_good->{date} );
+log_info( "Date of first bad time format:"  , $first_bad->{date} );
+log_info( "Date of last bad time format:"   , $last_bad->{date} );
 
 print "\nCreating list of data to keep\n";
+log_info( "Creating list of data to keep");
 
 my %data_to_keep;
 my %data_to_delete;
@@ -360,6 +391,10 @@ my %data_to_delete;
 $i = 0;
 $temp_fines_having_count_sth->execute(2);
 PAIRS: while ( my $duplicate = $temp_fines_having_count_sth->fetchrow_hashref() ) {
+    unless( defined( $duplicate->{itemnumber} ) ) {
+        log_warn( "Duplicate not fixed: Item Number is not defined for:", "borrowernumber", $duplicate->{borrowernumber},"description",  $duplicate->{my_description} ); 
+        next PAIRS;
+    }
     $i++;
     my $newline = ( $i % 100 ) ? "" : "\r$i";
     print ".$newline";
@@ -367,8 +402,13 @@ PAIRS: while ( my $duplicate = $temp_fines_having_count_sth->fetchrow_hashref() 
     my @key = ( $duplicate->{borrowernumber}, $duplicate->{itemnumber} , $duplicate->{my_description} ); 
     my $key = join( '', @key );
     $data_to_keep_sth->execute( @key );
-    log_info( $data_to_keep_query, @key );;
+    log_info( "querying for data to keep using key '$key'", 
+              $duplicate->{borrowernumber}, 
+              $duplicate->{itemnumber} , 
+              $duplicate->{my_description}   );
+    log_debug( $data_to_keep_query, @key );
     KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
+
         my $total_paid = $keep->{first_amount_paid} + $keep->{second_amount_paid};
         my $amount = $keep->{amount} || 0;
         my $amountoutstanding = $amount - $total_paid;
@@ -407,6 +447,10 @@ print "\nUpdating singletons\n";
 $i=0;
 $temp_fines_having_count_sth->execute(1);
 SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashref() ) {
+    unless( defined( $singleton->{itemnumber} ) ) {
+        log_warn( "Record not fixed: Item Number is not defined for:", "borrowernumber", $singleton->{borrowernumber},"description",  $singleton->{my_description} ); 
+        next SINGLETONS;
+    }
     $i++;
     my $newline = ( $i % 100 ) ? "" : "\r$i";
     print ".$newline";
@@ -419,19 +463,17 @@ SINGLETONS: while ( my $singleton = $temp_fines_having_count_sth->fetchrow_hashr
     my $bad_singleton = $singleton_get_bad_accountlines_id_sth->fetchrow_hashref();
     
     if( defined $bad_singleton->{accountlines_id} ) {
-        if ($missing_good_description{$my_description}) {
-            log_warn(   "Accountlines description '" 
-                        . $my_description 
-                        . "' matches record with undefined fields. Please inspect." );
-            next SINGLETONS;
-        }
         my $description = $singleton->{my_description} . $time_due_correct;
         my @update_singleton_args = (
               $description,
-              "Updated by fines de-duplicator",
               $bad_singleton->{accountlines_id} 
         );
-        log_info( $update_singleton_query, @update_singleton_args );
+        log_info( 'Updating descripton from/to/accountlines_id', 
+                    $singleton->{my_description} . $time_due_fixme, 
+                    $singleton->{my_description} . $time_due_correct, 
+                    $bad_singleton->{accountlines_id} 
+                );
+        log_debug( $update_singleton_query, @update_singleton_args );
         if( $opt_do_eet ) {
             $update_singleton_sth->execute( @update_singleton_args );
         }
@@ -454,6 +496,8 @@ MULTIPLES: while ( my $multiple = $temp_fines_having_count_greater_than_sth->fet
 }
 
 print "\nUpdating duplicates\n";
+log_info( "Updating duplicates" );
+
 $i=0;
 UPDATE_FINES: for my $key ( keys %data_to_keep ) {
     $i++;
@@ -468,12 +512,11 @@ UPDATE_FINES: for my $key ( keys %data_to_keep ) {
             $data_to_keep{$key}->{lastincrement},
             $data_to_keep{$key}->{amount},
             $data_to_keep{$key}->{amountoutstanding},
-            "Updated by fines de-duplicator",
             $accountlines_id
         );
 
-    log_info( $update_accountlines_query, @update_accountlines_args );
-    log_info( $delete_accountlines_query, $data_to_delete{$key}->{accountlines_id} );
+    log_info( "updating:", $data_to_keep{$key}->{description}, $data_to_keep{$key}->{date}, $accountlines_id );
+    log_info( "deleting:", $data_to_delete{$key}->{accountlines_id} );
     if( $opt_do_eet ) {
         $update_accountlines_sth->execute( @update_accountlines_args );
         $delete_accountlines_sth->execute( $data_to_delete{$key}->{accountlines_id} );
@@ -604,6 +647,8 @@ The temporary table will have the following information:
     date                   | Date from accountlines
     amount_paid            | amount - amountoutstanding
     correct_timeformat     | 0 for 'BAD', 1 for 'GOOD'.
+    missing_fields         | 1 if description, borrowernumber 
+                             or itemnumber is missing.
 
 There should only be at most two rows for each description -- 
 timeformat will be 0 or 1.
@@ -613,9 +658,7 @@ timeformat will be 0 or 1.
             Send a  warning to the logs if
                 The description is BAD or
                 The description is GOOD, but might be paired with a BAD description.
-        If borrowernumber, description or itemnumber are all present
-            Add row to the temporary table.
-    For each pair of rows in the temporary table having the same borrowernumber, my_description and itemnumber
+    For each pair of rows in the temporary table having the same borrowernumber, my_description and itemnumber and missing_fields is 0
         For each pair, there must be a newer and an older fine. If the fines have the same date, we don't know which to keep; these must be resolved by hand.
         Run a query to find which data to keep:
             Amount
