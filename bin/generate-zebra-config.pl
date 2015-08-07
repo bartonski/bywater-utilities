@@ -67,10 +67,13 @@ my $data= YAML::LoadFile $ARGV[0];
 for my $record ( @{$data->{indexes}} ) {
     # In the javascript menu entries,
     # record type is ommitted if it is 'w'.
-    $record->{menu_index_type} = 
-        ( $record->{index_type} eq 'w' ) 
-        ? '' 
-        : ",$record->{index_type}";
+    my %menu_index_type = (
+          w => ',kw'
+        , p => ',phr'
+        , n => ',nb'
+        , s => ',s'    # I'm not sure that this is correct -- just doing a pass through.
+    );
+    $record->{menu_index_type} = $menu_index_type{ $record->{index_type} };
 }
 
 my %templates = (
@@ -108,7 +111,7 @@ q|$(document).ready(function(){
 [% FOREACH index IN indexes %]
     // Add [% index.index_name %]  to advanced search
     if (window.location.href.indexOf("koha/opac-search.pl") > -1) {
-        $(".advsearch").append('<option value="[% index.index_name %][% index.menu_index_type %]">[% index.menu_title %]</option>');
+        $("#booleansearch select[name='idx']").append('<option value="[% index.index_name %][% index.menu_index_type %]">[% index.menu_title %]</option>');
     }
 [%END%]
 });
