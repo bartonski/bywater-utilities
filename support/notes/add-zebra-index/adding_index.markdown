@@ -261,7 +261,7 @@ Note that subfields are indexed using the `<index_subfields>` tag, wheras an ent
                     function(){ 
                         // Add MENU TEXT to advanced search
                         if (window.location.href.indexOf("koha/opac-search.pl") > -1) {
-                            $(".advsearch").append('<option value="Zebra index name,search type">MENU TEXT</option>');
+                            $("#booleansearch select[name='idx']").append('<option value="Zebra index name,search type">MENU TEXT</option>');
                         }
                     }             
                 );
