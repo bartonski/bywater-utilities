@@ -1,0 +1,6 @@
+#! /bin/sh
+
+url="$(echo $1 | sed 's|.*cgi-bin|/cgi-bin|')"
+fieldname=$2
+
+echo "CONCAT('<a href=\\\"${url}?$fieldname=', $fieldname, '\\\">', $fieldname, '</a>' ) AS $fieldname  " 
