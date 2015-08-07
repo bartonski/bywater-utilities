@@ -1,1 +1,33 @@
- C4::Circulation::_GetCircControlBranch($item, $borrower)
+use Modern::Perl; # just because.
+
+use C4::Circulation;
+
+my $itemnumber;
+my $borrowernumber;
+C4::Circulation::_GetCircControlBranch($item, $borrower)
+
+# Object oriented database manipulation. Schemas are found in kohaclone/Koha/Schema/Result/*.pm
+# These all have perldocs:
+# perldoc Koha::Schema::Result::Borrower
+
+use Koha::Database;
+
+    my $hold = Koha::Database->new()->schema()->resultset('Reserve')->create(
+        {
+            borrowernumber => $hold_waiting_borrowernumber,
+            biblionumber   => $biblionumber,
+            itemnumber     => $itemnumber3,
+            branchcode     => $branch,
+            priority       => 0,
+            found          => 'W'
+        }
+    );
+
+
+use Koha::BorrowerKoha::Borrower;
+
+my $borrower = Koha::Borrower->new();
+
+new
+
+
