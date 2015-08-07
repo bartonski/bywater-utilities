@@ -35,6 +35,8 @@ my %global_log_level_lookup = (
     , FATAL  => 8
 );
 
+my %global_branchcode = ();
+
 my $global_log_level = $global_log_level_lookup{$opt_log_level_string};
 
 my $global_csv = Text::CSV_XS->new ({ binary => 1, eol => "\n" })
@@ -102,6 +104,7 @@ if( $opt_new_table ) {
     accounttype           varchar(5),
     lastincrement         decimal(28,6),
     missing_fields        BOOLEAN, 
+    patron_branchcode     varchar(10), 
     KEY accountlines_id   (accountlines_id),
     KEY fine_id           ( my_description, borrowernumber,  itemnumber )
 ) ENGINE=InnoDB CHARSET=utf8;"; 
@@ -111,8 +114,10 @@ if( $opt_new_table ) {
 }
 
 my $fines_sth = $global_dbh->prepare(
-"SELECT *
+"SELECT accountlines.*,
+        borrowers.branchcode
 FROM accountlines
+     inner join borrowers using (borrowernumber)
 WHERE accounttype in ('F', 'FU', 'O', 'M')
   AND ( description like '%$time_due_correct' OR description like '%$time_due_fixme');"
 );
@@ -132,8 +137,9 @@ my $insert_temp_sth = $global_dbh->prepare(
     itemnumber,
     accounttype,
     lastincrement,
-    missing_fields
-) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );"
+    missing_fields,
+    patron_branchcode
+) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );"
 );
 
 my $count_timeformat_query = "select count(*) as 'count' from $temp_table_name where correct_timeformat = ? and missing_fields = ?";
@@ -330,6 +336,7 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
     my @undefined_fields = ( keys %undefined_field );
     my $missing_fields = ( scalar @undefined_fields > 0 );
 
+    $global_branchcode{ $fine->{borrowernumber} } = $fine->{branchcode};
     $insert_temp_sth->execute(
         $fine->{accountlines_id}, # accountlines_id 
         $fine->{description},     # original_description 
@@ -344,7 +351,8 @@ FINE: while( my $fine = $fines_sth->fetchrow_hashref() ) {
         $fine->{itemnumber},
         $fine->{accounttype},
         $fine->{lastincrement},
-        $missing_fields           # missing_fields
+        $missing_fields,          # missing_fields
+        $fine->{branchcode}
     );
 }
 
@@ -407,16 +415,20 @@ PAIRS: while ( my $duplicate = $temp_fines_having_count_sth->fetchrow_hashref() 
               $duplicate->{itemnumber} , 
               $duplicate->{my_description}   );
     log_debug( $data_to_keep_query, @key );
+    my $borrowernumber = $duplicate->{borrowernumber};
+    my $borrower_branchcode = $global_branchcode{ $duplicate->{borrowernumber} };
     KEEPDATA: while( my $keep = $data_to_keep_sth->fetchrow_hashref() ) {
 
         my $total_paid = $keep->{first_amount_paid} + $keep->{second_amount_paid};
         my $amount = $keep->{amount} || 0;
         my $amountoutstanding = $amount - $total_paid;
         if ( $amountoutstanding < 0 ) {
-            log_warn( "Amount paid is greater than amount outstanding", 
-                      "Accountlines ID:" , $keep->{accountlines_id} ,
-                      "Total paid:"      , $total_paid              ,
-                      "Fine amount:"     , $keep->{amount}          ,
+            log_warn( "Amount paid is greater than amount outstanding"  , 
+                      "Accountlines ID:" , $keep->{accountlines_id}     ,
+                      "Total paid:"      , $total_paid                  ,
+                      "Fine amount:"     , $keep->{amount}              ,
+                      "Borrower number"  , $borrowernumber              ,
+                      "Home Branch"      , $borrower_branchcode         ,
                       "Credit:"          , -$amountoutstanding
                     );
             $amountoutstanding = 0;
@@ -533,6 +545,8 @@ END {
 }
 
 exit 0;
+
+# TODO fix documentation of error logs.
 
 =head1 NAME
 
