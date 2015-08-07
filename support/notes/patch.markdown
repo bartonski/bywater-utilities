@@ -50,3 +50,35 @@ or
 ## Backing out a failed merge
 
     git am --abort
+
+## Squashing Patches
+
+Rebase -- give yourself a couple of patches leeway -- better to choose too many than too few.
+
+    git rebase -i HEAD~7
+
+This will bring up an editor with the following commits:
+
+    pick d7bc710 BYWATER CUSTOM - Renew via SIP2 fails, fixed in master
+    pick 632b157 Bug 13636 - Search results item status incorrect for holds
+    pick c449f28 Grand commit of zebra indexes
+    pick f316b65 change index names to use dashes rather than underscores
+    pick 116d875 Adding index for Marc 691
+    pick 57954d0 Removing index for 852 h
+    pick dcf17f7 Add zebra index for Awards at 586 a
+
+squash'em
+
+    pick d7bc710 BYWATER CUSTOM - Renew via SIP2 fails, fixed in master
+    pick 632b157 Bug 13636 - Search results item status incorrect for holds
+    pick c449f28 Grand commit of zebra indexes
+    s f316b65 change index names to use dashes rather than underscores
+    s 116d875 Adding index for Marc 691
+    s 57954d0 Removing index for 852 h
+    s dcf17f7 Add zebra index for Awards at 586 a
+
+Any commit marked 's' will be squashed into the commit above. In this case, the 4 latest commits are squashed into `c449f28 Grand commit of zebra indexes`
+
+Once sqashed, run
+
+    git format-patch HEAD~1
