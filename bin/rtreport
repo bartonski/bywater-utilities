@@ -1,0 +1,61 @@
+#! /usr/bin/perl
+
+# http://staff.jaffreypubliclibrary.org/cgi-bin/koha/reports/guided_reports.pl?reports=99&phase=Run+this+report&sql_params=2015-01-01&sql_params=2015-12-29
+
+use Modern::Perl;
+use URI;
+
+my $shortname = '';
+
+my $instance = $ARGV[0] =~ /^http/ ? undef : shift @ARGV;
+
+sub get_report_title {
+    my $instance = shift;
+    my $report_id = shift; 
+    return undef if( !defined $instance );
+
+    my $BYWATER_GATEWAY = $ENV{BYWATER_GATEWAY};
+    my $query = qq('select report_name from saved_sql where id = $report_id');
+    my $report_out = qx(ssh $BYWATER_GATEWAY watchcat -k${instance} -tmysqlcmd -q "$query" );
+    my @report_out = split( "\n", $report_out );
+    
+    return ( $report_out[-1] =~ /Error, target .* not found in database./ ) ? undef : $report_out[-1];
+}
+
+my $uri=URI->new($ARGV[0]);
+
+my $url;
+
+my $host=$uri->host;
+my @query=$uri->query_form;
+my %query=$uri->query_form;
+
+my $report_title = get_report_title( $instance, $query{reports} );
+if( !defined $report_title ) {
+    print "Enter report title: ";
+    $report_title = <STDIN>;
+    chomp $report_title;
+    print "\n\n";
+}
+
+my $runreport = ( ! defined $query{sql_params} && defined $query{limit} ) 
+                ? $uri->as_string
+                :  $uri->scheme 
+                   . "://" 
+                   . $uri->host 
+                   . "/cgi-bin/koha/reports/guided_reports.pl?reports=$query{reports}&phase=Run+this+report";
+
+say  "Report name      : $report_title";
+say  "Report number    : $query{reports}";
+say  "Run this report  : $runreport";
+
+if( ! defined $query{sql_params} && defined $query{limit} ) {
+    
+}
+if( defined $query{sql_params} ) {
+    say "Run report using  ";
+    while ( my ( $key, $value ) = splice @query, 0, 2 ) {
+        say "                 : $value" if( $key eq 'sql_params' ) ;
+    }
+    say "                   " . $uri->as_string;
+}
