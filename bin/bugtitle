@@ -1,0 +1,32 @@
+#! /usr/bin/perl
+
+use REST::Client;
+use JSON;
+use Data::Dumper;
+
+my $tracker = "https://bugs.koha-community.org/bugzilla3";
+
+my $bug_number = $ARGV[0];
+my $client = REST::Client->new();
+my $json_text = $client->GET("$tracker/rest/bug/$bug_number");
+
+my $coder = JSON::XS->new->ascii->pretty->allow_nonref;
+my $perl_scalar = $coder->decode($json_text->{_res}->{_content});
+my $bug = $perl_scalar->{bugs}->[0];
+
+my $output = [
+    { "Bug $bug_number" => $bug->{summary} } ,
+];
+
+my $length = 0;
+for my $hr ( @$output ) {
+    for my $key ( keys %$hr ) {
+        $length = length($key) > $length ? length($key) : $length;
+    }
+}
+
+for my $row (@$output) {
+    while ( ($key, $val) = each %$row ) {
+        printf ( "%-${length}s : %s\n", $key, $val ); 
+    }
+}
