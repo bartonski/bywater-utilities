@@ -17,7 +17,7 @@ fi
 # Shell Functions
 
 # Takes rt ticket number as argument, opens ticket in browser.
-ticket() { 
+ticket() {
     local ticket_url="${RTSERVER}Ticket/Display.html?id=${1}"
     echo "$ticket_url"
     xdg-open "$ticket_url"
@@ -26,7 +26,7 @@ ticket() {
 }
 
 # Takes rt ticket number as argument, opens self service view of ticket in browser.
-partner_ticket() { 
+partner_ticket() {
     local partner_url="${RTSERVER}SelfService/Display.html?id=${1}"
     echo "$partner_url"
     xdg-open "$partner_url"
@@ -38,20 +38,44 @@ partner_ticket() {
 # look up bug in bugzilla
 bug() { xdg-open http://${BUGZILLA}/bugzilla3/show_bug.cgi?id=${1}; sleep 1; echo; }
 
-assh() { 
+assh() {
     if shortname "$@" > /dev/null
     then
         kohaversion "$@"
     fi
-    time ssh -t $BYWATER_GATEWAY ssh "$@"; 
+    #ssh $BYWATER_GATEWAY ssh "$@" "egrep \'KOHA_CONF|PERL5LIB|ErrorLog\'" '/etc/apache2/sites-enabled/*'
+    time ssh -t $BYWATER_GATEWAY ssh "$@";
 }
 
 # 'Straight' assh -- use when you want to keep the integrity of STDIN / STDOUT,
 # e.g. $ tar cf - backup.20150719.sql.gz | sassh bwsdev tar xvf -
-sassh() { ssh  $BYWATER_GATEWAY ssh "$@"; } 
+sassh() { ssh  $BYWATER_GATEWAY ssh "$@"; }
+
+asshcp() {
+    local shortname=$1
+    local filepath=$2
+    local filename="$( basename $filepath )"
+    sassh $shortname cat $filepath > /tmp/$filename
+    if [ $! ]
+    then
+        echo "/tmp/$filename"
+    fi
+}
+
+# remove host key from annon.
+asshrmkey() {
+    set -x
+    ssh $BYWATER_GATEWAY ssh-keygen -R "$1"
+    sleep 2
+    time ssh -t $BYWATER_GATEWAY ssh "$1"
+    set +x
+}
 
 # Look up shortname
-shortname() { ssh  $BYWATER_GATEWAY grep "$1" /etc/hosts; }
+shortname() {
+    ssh  $BYWATER_GATEWAY ./bin/shortname "$1"
+    ssh  $BYWATER_GATEWAY grep "$1" /etc/hosts;
+}
 
 # I don't keep that much data locally, so I never use this...
 mksupport() { mkdir -p $SUPPORT/$1/files; }
@@ -65,29 +89,37 @@ append_shortname() {
 }
 
 # TODO: put this in a shell script of its own.
-sugar() 
+sugar()
 {
+    sugarfile=$HOME/Support/notes/ticketlinks.txt # Global
     local shortname=$1
-    local linkfile=$HOME/Support/notes/ticketlinks.txt
     local sugarurl="http://sugarcrm.bywatersolutions.com/"
           sugarurl="${sugarurl}index.php?action=UnifiedSearch&module="
           sugarurl="${sugarurl}Home&search_form=false&advanced="
           sugarurl="${sugarurl}false&query_string=$shortname"
-    if grep -q $shortname $linkfile
+    echo "sugar file: $sugarfile"
+    if grep -q $shortname $sugarfile
     then
-        grep $shortname $linkfile | cut -d: -f 2-
+        grep $shortname $sugarfile | cut -d: -f 2-
     else
         if [ ! -x $DISPLAY ]
         then
-            firefox "$sugarurl" &
+            firefox "$sugarurl" > /dev/null 2> /dev/null &
         fi
-        append_shortname $shortname 'xxx: xxx:' $linkfile
-        append_shortname $shortname 'xxx: Sugar URL: ' $linkfile
-        append_shortname $shortname 'xxx: Staff: ' $linkfile
-        append_shortname $shortname 'xxx: Opac: ' $linkfile
-        vim + $linkfile
-        grep $shortname $linkfile | cut -d: -f 2-
+        append_shortname $shortname 'xxx: xxx:' $sugarfile
+        append_shortname $shortname 'xxx: Sugar URL: ' $sugarfile
+        append_shortname $shortname 'xxx: Staff: ' $sugarfile
+        append_shortname $shortname 'xxx: Opac: ' $sugarfile
+        vim + $sugarfile
+        grep $shortname $sugarfile | cut -d: -f 2-
     fi
+}
+
+sugarff() {
+    local shortname=$1
+    local linkfile=$HOME/Support/notes/ticketlinks.txt
+    local sugarurl="$(sed -n "/$shortname: Sugar URL: /s/^.*Sugar URL: //p" $linkfile )"
+    firefox "$sugarurl" 2> /dev/null &
 }
 
 # look up opac URL in 'ticketlinks.txt', open URL in web browser
@@ -124,18 +156,45 @@ kohaff () {
         staffclient="$(grep ^${1}: $linkfile | grep Staff | cut -d ':' -f 3- | sed 's|/$||')"
         url="${staffclient}/${2}"
         echo $url
-        /usr/bin/firefox $url 2> /dev/null & 
+        /usr/bin/firefox $url 2> /dev/null &
     fi
+}
+
+# run watchcat remotely.
+watchcat() {
+    echo "watchcat " "$@"
+    ssh $BYWATER_GATEWAY watchcat "$@"
+}
+
+wcaturl() {
+    watchcat -tgeturls -k$1
+}
+
+wcatsugar() {
+    watchcat -tsugarv -k$1
 }
 
 # look up koha version using watchcat.
 kohaversion() {
-    ssh $BYWATER_GATEWAY watchcat -tkohav -k$1
+    echo watchcat -tkohav -k$1
+    watchcat -tkohav -k$1
 }
 
 # koha* and opac* below all open various staff client or opac urls.
 kohaletter() {
     kohaurl "$1" "cgi-bin/koha/tools/letter.pl"
+}
+
+kohasyspref() {
+    kohaurl "$1" "cgi-bin/koha/admin/preferences.pl?op=search&searchfield=${2}"
+}
+
+kohaijs() {
+    kohasyspref "$1" "intranetuserjs"
+}
+
+kohaojs() {
+    kohasyspref "$1" "opacuserjs"
 }
 
 kohaconf() {
@@ -183,6 +242,10 @@ kohareport() {
     kohaurl "$1" "cgi-bin/koha/reports/reports-home.pl"
 }
 
+kohareportnum() {
+    kohaurl "$1" "cgi-bin/koha/reports/guided_reports.pl?reports=${2}&phase=Show+SQL";
+}
+
 kohatools() {
     kohaurl "$1" "cgi-bin/koha/tools/tools-home.pl"
 }
@@ -193,6 +256,10 @@ kohapl() {
 
 kohabib() {
     kohaurl "$1" "cgi-bin/koha/catalogue/detail.pl?biblionumber=$2"
+}
+
+kohadlbib() {
+    kohaurl "$1" "cgi-bin/koha/catalogue/export.pl?format=utf8&op=export&bib=$2"
 }
 
 opacselfcheck() {
@@ -215,7 +282,7 @@ croncomment () {
 }
 
 # Render markdown file using pandoc, put in HOME/public_html/markdown
-md() { 
+md() {
     local htmldir="$HOME/public_html/markdown"
     test -d $htmldir || mkdir $htmldir
     local base="$(basename $1 '.markdown')"
@@ -224,9 +291,21 @@ md() {
     echo "$htmlfile"
 }
 
+# Render markdown file using pandoc, put in current directory -- useful for blog posts.
+bmd ()
+{
+    local htmldir=".";
+    test -d $htmldir || mkdir $htmldir;
+    local base="$(basename $1 '.markdown')";
+    local htmlfile="$htmldir/${base}.html";
+    pandoc -f markdown $1 > "$htmlfile";
+    echo "$htmlfile"
+}
+
+
 # show the tables that contain a search term in kohastructure.sql.
-grepks () 
-{ 
+grepks ()
+{
     egrep --color=auto -i "^(CREATE TABLE|[)])|$1" $KOHA/installer/data/mysql/kohastructure.sql | grep --color=auto -i --color=auto -B1 "$1"
 }
 
@@ -235,21 +314,18 @@ rttime () {
     perl -e '$minutes = $ARGV[0] + 15; $quarter_hours = int($minutes/15); print $quarter_hours*15 . " minutes\n" ' $1
 }
 
-# The following three functions need to be refactored.
-# Title for 'nextrecord()', below.
-t() { rtnum="$1"; shortname="$2"; subject="$3"; echo "for $rtnum $shortname $subject"; }
-
 # An extension of querymarc, generating actual sql. Needs to be split into two functions.
-qm () 
-{ 
+qm ()
+{
     qm="$(querymarc $1)";
-    echo "select $qm from biblioitems where $qm != '' limit 1;";
+    echo "select $qm as '$1' from biblioitems where $qm != '' limit 1;";
+    echo "select $qm as '$1', title from biblioitems inner join biblio using (biblionumber) where $qm != '' limit 1;";
     echo "select marcxml from biblioitems where $qm != '' limit 1;"
 }
 
 # nextrecord 13 20930 gts 'add zebra indexes 260$e, 264$a, 752$a-$h => publisher location' '260$e'
-nextrecord () 
-{ 
+nextrecord ()
+{
     bibnum=$1;
     rtnum=$2;
     shortname=$3;
@@ -267,9 +343,23 @@ nextrecord ()
 
 # Crontab entries to schedule 'run_rebuild.sh' -- takes RT ticket number as argument
 schedule_rebuild() {
+    local ticket=${1}
+    local instance=${2}
     echo "# $(date +%Y-%m-%d) -- $USER@bywatersolutions.com -- http://ticket.bywatersolutions.com/Ticket/Display.html?id=$1"
-    date +"# 5 0 %d %m %u /home/koha/run_rebuild.sh" -d tomorrow; 
-    date +"5 0 %d %m %u \$HOME/run_rebuild.sh" -d tomorrow; 
+    echo
+    echo "# Git"
+    date +"# 5 0 %d %m %u /home/koha/run_rebuild.sh" -d tomorrow;
+    if [ -z $instance ]
+    then
+        echo "No instance given"
+    else
+        echo
+        echo "# Package: /etc/cron.d/koha-$instance"
+        date +"# 5 0 %d %m %u ${instance}-koha /var/lib/koha/$instance/run_rebuild.sh" -d tomorrow;
+        echo
+        echo "# Cluster:"
+        date +"# 5 0 %d %m %u sudo /home/bywater/run-rebuild-from-bywater.sh $instance" -d tomorrow
+    fi
 }
 
 
@@ -287,4 +377,116 @@ bugrelease() {
 bwiki() {
     local searchparams="$(sed 's/ \+/+/' <<< "$*")"
     xdg-open "http://wiki.bywatersolutions.com/doku.php?do=search&id=${searchparams}"
+}
+
+kbticket() { echo "${@}" | sed 's/^.* <bwsbot> Ticket //; s/(open): //; s/ - http:.*//' | xsel; }
+
+today() { local d="$(date --rfc-3339='date')"; echo "Today: $d" ; }
+
+dw() {
+    local notefile="/home/barton/Employer/bywater/daynotes/$(dts).note.txt"
+    echo "Daily Wrap-up ( $( date +'%a %b %d, %Y') )"
+    sed -n '1,/^---- 1/p' $notefile
+    local EOB="$(sed -n '1,/^---- 1/p' $notefile | grep EOB)"
+    if [[ ! -z $EOB ]]; then
+        echo "Un-closed EOB items:"
+        echo "$EOB"
+    fi
+}
+
+porttest() { echo $'\c]quit' | xsel ; telnet $1 $2; }
+
+#alias lynx='lynx -accept_all_cookies'
+
+dn() {
+    local notefile=$1
+    echo $notefile
+    echo
+    echo "Daily Wrap-up ( $( date +'%a %b %d, %Y') )"
+    sed -n '/^---- Done Today/,/^----/p' $notefile | grep -v '^----'
+    local EOB="$(sed -n '/^---- Done Today/,/^----/p' $notefile | grep EOB)"
+    if [[ ! -z $EOB ]]; then
+        echo "Un-closed EOB items:"
+        echo "$EOB"
+    fi
+    sed -n '/^---- Done Today/,/^----/p' $notefile | stdin_gmtix.pl
+}
+
+daynote() {
+    local notefile="/home/barton/Employer/bywater/daynotes/$(dts).note.txt"
+    if [[ ! -e $notefile ]]
+    then
+    cat > $notefile << DAYNOTE
+---- Done Today
+
+Linux tip of the day:
+
+What I Learned:
+
+---- My Tickets
+
+---- Personal Notes
+
+---- Queries
+-- 
+foo
+-- 
+foo
+-- 
+foo
+-- 
+foo
+-- 
+foo
+-- 
+foo
+
+---- Scratch
+...
+...
+...
+
+---- What do I do at my desk?
+
+---- What do I want to do that I'm not?
+
+---- What's working
+
+---- What's not working
+
+---- What am I putting off?
+
+---- I have no place to put ...
+
+---- I can't ...
+
+---- I can never find
+
+---- I'm losing a lot of money on ...
+
+---- Disorganization makes me feel ...
+
+---- 
+DAYNOTE
+    fi
+    vim +/"My Tickets" $notefile
+    echo
+    dn $notefile
+}
+
+gmtix() {
+    perl -E 'say "https://mail.google.com/mail/u/1/#search/(from%3Asupport%40bywatersolutions.com)+is%3Aunread+subject%3A(" . join( "+OR+", @ARGV ) .  ")"' $@;
+}
+
+kohalinks() {
+    watchcat -tgeturls -k$1 | grep http | while read url; do
+        local wget_out="$(wget --quiet -O - $url)"
+        if [[ $? = 0 ]]; then
+            if grep -q 'TEMPLATE FILE: opac-main.tt' <<< "$wget_out"; then
+                echo "$1 OPAC: $url"
+            else
+                echo "$1 Staff: $url"
+            fi
+        fi
+    done | sort -r
 }
