@@ -9,17 +9,27 @@ my $shortname = '';
 
 my $instance = $ARGV[0] =~ /^http/ ? undef : shift @ARGV;
 
-sub get_report_title {
+sub run_watchcat_query {
     my $instance = shift;
-    my $report_id = shift; 
+    my $query = shift;
+
     return undef if( !defined $instance );
 
     my $BYWATER_GATEWAY = $ENV{BYWATER_GATEWAY};
-    my $query = qq('select report_name from saved_sql where id = $report_id');
     my $report_out = qx(ssh $BYWATER_GATEWAY watchcat -k${instance} -tmysqlcmd -q "$query" );
+    $report_out =~ s/\r//g;
     my @report_out = split( "\n", $report_out );
     
-    return ( $report_out[-1] =~ /Error, target .* not found in database./ ) ? undef : $report_out[-1];
+    return ( $report_out[-1] =~ /Error, target .* not found in database./ ) ? undef : @report_out;
+}
+
+sub cleanup_sql {
+    my @sql = @_;
+    while( $sql[0] !~ /^(savedsql: )/ ) {
+        shift @sql;
+    }
+    $sql[0] =~ s/savedsql: //;
+    return @sql;
 }
 
 my $uri=URI->new($ARGV[0]);
@@ -29,14 +39,35 @@ my $url;
 my $host=$uri->host;
 my @query=$uri->query_form;
 my %query=$uri->query_form;
+my $report_id = $query{reports};
 
-my $report_title = get_report_title( $instance, $query{reports} );
-if( !defined $report_title ) {
+my @title = run_watchcat_query( 
+                 $instance, 
+                 qq('select report_name from saved_sql where id = $report_id')
+            );
+
+my $connected = scalar @title;
+
+my $report_title = '';
+
+if( $connected == 0 ) {
     print "Enter report title: ";
     $report_title = <STDIN>;
     chomp $report_title;
     print "\n\n";
+} else {
+    $report_title = $title[-1];
 }
+
+my @sql = ();
+
+if ( $connected ) {
+    @sql = run_watchcat_query( 
+                $instance, 
+                qq('select savedsql from saved_sql where id = $report_id\\G')
+           );
+}
+
 
 my $runreport = ( ! defined $query{sql_params} && defined $query{limit} ) 
                 ? $uri->as_string
@@ -45,6 +76,7 @@ my $runreport = ( ! defined $query{sql_params} && defined $query{limit} )
                    . $uri->host 
                    . "/cgi-bin/koha/reports/guided_reports.pl?reports=$query{reports}&phase=Run+this+report";
 
+say  "";
 say  "Report name      : $report_title";
 say  "Report number    : $query{reports}";
 say  "Run this report  : $runreport";
@@ -59,3 +91,9 @@ if( defined $query{sql_params} ) {
     }
     say "                   " . $uri->as_string;
 }
+
+if( scalar @sql ){
+    @sql = cleanup_sql( @sql );
+    say  join( "\n", "", "=== SQL ===", @sql, "===========" )
+}
+
