@@ -1,0 +1,25 @@
+#! /usr/bin/perl
+
+use strict;
+use warnings;
+
+# A project consists of 
+# * A client, usually specified by shortname
+# * A ticket number using one of the following syntaxes
+#   * An rt ticket URL
+#   * A series of digits which may optionally follow: '1234'
+#   * the string 'rt' (case insensitive), e.g. 'rt 1234' or 'RT 1234'
+#       * the space between rt and the digits may be replaced by an underscore, e.g. rt_1234
+#       * 'rt' may have the charcter '@' before it, e.g. @rt 1234
+# * Files associated with the ticket
+#   * Descriptions should be markdown formatted.
+
+# A project will come in two phases: Project setup
+# * Record client and ticket number.
+# * Make sure that a record exists in sugar
+
+# Work project
+# Open pane in tmux
+# Start timer
+# Set envirnoment variables for client id (shortname), staff url, opac url
+# Exiting the project will record the time to the next 15 and optionally post that time to RT. 
