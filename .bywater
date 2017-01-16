@@ -3,6 +3,9 @@ export RTUSER="${USER}@bywatersolutions.com"
 export RTSERVER=http://ticket.bywatersolutions.com/ # Note trailing slash
 export BUGZILLA=bugs.koha-community.org
 
+# TODO: there are references to 'xsel' which aren't portable. Need to
+# create $COPY and $PASTE, which can be populated according to OS.
+
 if [ ! -z $EMPLOYER_PATH ]
 then
     export PATH="$PATH:${EMPLOYER_PATH}/bin"
@@ -38,6 +41,7 @@ partner_ticket() {
 # look up bug in bugzilla
 bug() { xdg-open http://${BUGZILLA}/bugzilla3/show_bug.cgi?id=${1}; sleep 1; echo; }
 
+# 'annon ssh' -- ssh to remote server via annon.
 assh() {
     if shortname "$@" > /dev/null
     then
@@ -51,6 +55,7 @@ assh() {
 # e.g. $ tar cf - backup.20150719.sql.gz | sassh bwsdev tar xvf -
 sassh() { ssh  $BYWATER_GATEWAY ssh "$@"; }
 
+# Copy file from remote server to local /tmp
 asshcp() {
     local shortname=$1
     local filepath=$2
@@ -88,6 +93,7 @@ append_shortname() {
     echo "$template" | sed "s/xxx/$shortname/g" >> $linkfile
 }
 
+# Look up site by shortname, output sugar, staff client and opac URLs for that site.
 # TODO: put this in a shell script of its own.
 sugar()
 {
@@ -115,6 +121,7 @@ sugar()
     fi
 }
 
+# Open sugar URL in firefox.
 sugarff() {
     local shortname=$1
     local linkfile=$HOME/Support/notes/ticketlinks.txt
@@ -166,10 +173,12 @@ watchcat() {
     ssh $BYWATER_GATEWAY watchcat "$@"
 }
 
+# get urls via watchcat
 wcaturl() {
     watchcat -tgeturls -k$1
 }
 
+# get surgar urls via watchcat
 wcatsugar() {
     watchcat -tsugarv -k$1
 }
@@ -181,91 +190,120 @@ kohaversion() {
 }
 
 # koha* and opac* below all open various staff client or opac urls.
+# Some of these take additional arguments.
+# Usage: (koha*|opac*) SHORTNAME [ARGS]
+
+# Open notices and slips
 kohaletter() {
     kohaurl "$1" "cgi-bin/koha/tools/letter.pl"
 }
 
+# Open a given syspref
+# usage: kohasyspref SHORTNAME SYSPREF
 kohasyspref() {
     kohaurl "$1" "cgi-bin/koha/admin/preferences.pl?op=search&searchfield=${2}"
 }
 
+# Open intranetuserjs
 kohaijs() {
     kohasyspref "$1" "intranetuserjs"
 }
 
+# Open opacuserjs
 kohaojs() {
     kohasyspref "$1" "opacuserjs"
 }
 
+# Open admin page
 kohaconf() {
     kohaurl "$1" "cgi-bin/koha/admin/admin-home.pl"
 }
 
+# Open circ page
 kohacirc() {
     kohaurl "$1" "cgi-bin/koha/circ/circulation-home.pl"
 }
 
+# Open borrower page
 kohapatron() {
     kohaurl "$1" "cgi-bin/koha/members/members-home.pl"
 }
 
+# Open advanced search page
 kohasearch() {
     kohaurl "$1" "cgi-bin/koha/catalogue/search.pl"
 }
 
+# Virtual shelves (??)
 kohalist() {
     kohaurl "$1" "cgi-bin/koha/virtualshelves/shelves.pl"
 }
 
+# Add bib page
 kohacatalog() {
     kohaurl "$1" "cgi-bin/koha/cataloguing/addbooks.pl"
 }
 
+# Authorities
 kohaauthorities() {
     kohaurl "$1" "cgi-bin/koha/authorities/authorities-home.pl"
 }
 
+# Serials
 kohaserials() {
     kohaurl "$1" "cgi-bin/koha/serials/serials-home.pl"
 }
 
+# Logout
 kohalogout() {
     kohaurl "$1" "cgi-bin/koha/mainpage.pl?logout.x=1"
 }
 
+# Acquisitions
 kohaacq() {
     echo "*** Log in as bwssupport! ***"
     kohaurl "$1" "cgi-bin/koha/acqui/acqui-home.pl"
 }
 
+# Koha reports page
 kohareport() {
     kohaurl "$1" "cgi-bin/koha/reports/reports-home.pl"
 }
 
+# Open a report by number
 kohareportnum() {
     kohaurl "$1" "cgi-bin/koha/reports/guided_reports.pl?reports=${2}&phase=Show+SQL";
 }
 
+# Koha tools page
 kohatools() {
     kohaurl "$1" "cgi-bin/koha/tools/tools-home.pl"
 }
 
+# Open a given '.pl' page
+# Usage: kohapl SHORTNAME PAGE.pl
 kohapl() {
     kohaurl "$1" "cgi-bin/koha/$2"
 }
 
+# Open detail page for a given bib
+# Usage: kohabib SHORTNAME BIBLIONUMBER
 kohabib() {
     kohaurl "$1" "cgi-bin/koha/catalogue/detail.pl?biblionumber=$2"
 }
 
+# Export bib as marc
+# Usage kohadlbib SHORTNAME BIBLIONUMBER
 kohadlbib() {
     kohaurl "$1" "cgi-bin/koha/catalogue/export.pl?format=utf8&op=export&bib=$2"
 }
 
+# Self Check Out
 opacselfcheck() {
     opacurl "$1" "cgi-bin/koha/sco/sco-main.pl"
 }
 
+# Library of congress marc reference.
 marcrefrence() {
     xdg-open "http://www.loc.gov/marc/bibliographic/bd${1}.html"
 }
@@ -323,6 +361,7 @@ qm ()
     echo "select marcxml from biblioitems where $qm != '' limit 1;"
 }
 
+# This was something that I added when I was working on zebra indexing. Pay it very little mind...
 # nextrecord 13 20930 gts 'add zebra indexes 260$e, 264$a, 752$a-$h => publisher location' '260$e'
 nextrecord ()
 {
@@ -363,12 +402,14 @@ schedule_rebuild() {
 }
 
 
+# Some sort of date difference thingus -- not sure why.
 datediff() {
     later="${1}"
     earlier="${2}"
     echo $(( $(date -d "$later" +%j) - $(date -d "$earlier" +%j) ))
 }
 
+# An attempt to figure out which release a bug is in.
 bugrelease() {
     git log --oneline | egrep -i "Bug $1|release" | grep --context=10 "Bug $1"
 }
@@ -379,10 +420,14 @@ bwiki() {
     xdg-open "http://wiki.bywatersolutions.com/doku.php?do=search&id=${searchparams}"
 }
 
-kbticket() { echo "${@}" | sed 's/^.* <bwsbot> Ticket //; s/(open): //; s/ - http:.*//' | xsel; }
+# Reformat arguments (as copied from IRC) and put them into 'xsel', ready for pasting.
+kbticket() { echo "${@}" | sed 's/^.* <samwise> Ticket //; s/(open): //; s/ - http:.*//' | xsel; }
 
+
+# Today's date, in the format YYYY-MM-DD
 today() { local d="$(date --rfc-3339='date')"; echo "Today: $d" ; }
 
+# Daily wrap
 dw() {
     local notefile="/home/barton/Employer/bywater/daynotes/$(dts).note.txt"
     echo "Daily Wrap-up ( $( date +'%a %b %d, %Y') )"
@@ -394,10 +439,13 @@ dw() {
     fi
 }
 
+# Telnet to a given domain and port, see if the port is open. The commands to exit telnet
+# are left in the copy/paste buffer.
 porttest() { echo $'\c]quit' | xsel ; telnet $1 $2; }
 
 #alias lynx='lynx -accept_all_cookies'
 
+# Very similar to 'dw' above. This one is actually used internally in 'daynote'
 dn() {
     local notefile=$1
     echo $notefile
@@ -412,6 +460,7 @@ dn() {
     sed -n '/^---- Done Today/,/^----/p' $notefile | stdin_gmtix.pl
 }
 
+# Open daily notes. Print wrap-up when vim closes.
 daynote() {
     local notefile="/home/barton/Employer/bywater/daynotes/$(dts).note.txt"
     if [[ ! -e $notefile ]]
@@ -474,10 +523,12 @@ DAYNOTE
     dn $notefile
 }
 
+# Reads argument list containing RT ticket numbers, search for unread emails containing those tickets.
 gmtix() {
     perl -E 'say "https://mail.google.com/mail/u/1/#search/(from%3Asupport%40bywatersolutions.com)+is%3Aunread+subject%3A(" . join( "+OR+", @ARGV ) .  ")"' $@;
 }
 
+# Look up opac and staff client URLs. (Somewhat) suitable for pasting into vim for 'sugar' above.
 kohalinks() {
     watchcat -tgeturls -k$1 | grep http | while read url; do
         local wget_out="$(wget --quiet -O - $url)"
