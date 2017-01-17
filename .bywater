@@ -270,6 +270,11 @@ kohareport() {
     kohaurl "$1" "cgi-bin/koha/reports/reports-home.pl"
 }
 
+# Start new SQL report
+kohanewreport() {
+    kohaurl "$1" "cgi-bin/koha/reports/guided_reports.pl?phase=Create%20report%20from%20SQL";
+}
+
 # Open a report by number
 kohareportnum() {
     kohaurl "$1" "cgi-bin/koha/reports/guided_reports.pl?reports=${2}&phase=Show+SQL";
@@ -397,7 +402,7 @@ schedule_rebuild() {
         date +"# 5 0 %d %m %u ${instance}-koha /var/lib/koha/$instance/run_rebuild.sh" -d tomorrow;
         echo
         echo "# Cluster:"
-        date +"# 5 0 %d %m %u sudo /home/bywater/run-rebuild-from-bywater.sh $instance" -d tomorrow
+        date +"# 5 0 %d %m %u root /home/bywater/run-rebuild-from-bywater.sh $instance" -d tomorrow
     fi
 }
 
