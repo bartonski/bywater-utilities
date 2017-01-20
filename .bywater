@@ -401,8 +401,8 @@ schedule_rebuild() {
         echo "# Package: /etc/cron.d/koha-$instance"
         date +"# 5 0 %d %m %u ${instance}-koha /var/lib/koha/$instance/run_rebuild.sh" -d tomorrow;
         echo
-        echo "# Cluster:"
-        date +"# 5 0 %d %m %u root /home/bywater/run-rebuild-from-bywater.sh $instance" -d tomorrow
+        echo "# Cluster: -- schedule in bywater crontab"
+        date +"# 5 0 %d %m %u sudo /home/bywater/run-rebuild-from-bywater.sh $instance" -d tomorrow
     fi
 }
 
