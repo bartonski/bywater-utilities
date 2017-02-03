@@ -259,10 +259,13 @@ Note that subfields are indexed using the `<index_subfields>` tag, wheras an ent
 
                 $(document).ready(
                     function(){ 
-                        // Add MENU TEXT to advanced search
+                        // Add <MENU TEXT> to advanced search
                         if (window.location.href.indexOf("koha/opac-search.pl") > -1) {
-                            $("#booleansearch select[name='idx']").append('<option value="Zebra index name,search type">MENU TEXT</option>');
+                            $("#booleansearch select[name='idx']").append('<option value="<Zebra index name>,<search type>"><MENU TEXT></option>');
                         }
+                        // Add <MENU TEXT> to  to masthead search.
+                        $("#masthead_search").append('<option value="<Zebra index name>,<search type>"><MENU TEXT></option>');
+                        
                     }             
                 );
 
