@@ -547,9 +547,14 @@ kohalinks() {
     done | sort -r
 }
 
+# Allows you to choose queries listed in the '$SUPPORT_QUERIES' directory and
+# gives you the wget line that you can paste into ssh to run the queries via koha-mysql.
+# May optionally take an instance name.
 sq() {
     (
         cd $SUPPORT_QUERIES
+        local INSTANCE=${1}
+        local SQLCMD="sudo koha-mysql $INSTANCE"
         select query in *.sql quit; do
             case $query in
                 quit)
@@ -557,7 +562,7 @@ sq() {
                 ;;
 
                 *)
-                    echo "wget -q -O - http://bywatersolutions.github.io/koha_support_queries/$query | sudo koha-mysql"
+                    echo "wget -q -O - http://bywatersolutions.github.io/koha_support_queries/$query | $SQLCMD"
                     break
                 ;;
             esac
