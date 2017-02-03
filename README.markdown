@@ -11,7 +11,7 @@ be added to `.bashrc`, or a file sourced by `.bashrc`:
     export EMPLOYER_RC="${EMPLOYER_PATH}/.${EMPLOYER}"
 
     ## If annon is down, uncomment the following line to enable 'assh' and 'sassh' functions.
-    #export BYWATER_GATEWAY='echor'
+    #export BYWATER_GATEWAY='echor.bywatersolutions.com'
 
     employerrc() {
         $EDITOR $EMPLOYER_RC
