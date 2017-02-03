@@ -523,7 +523,7 @@ foo
 ---- 
 DAYNOTE
     fi
-    vim +/"My Tickets" $notefile
+    vim -S $EMPLOYER_PATH/.bywater_vimrc +/"My Tickets" $notefile
     echo
     dn $notefile
 }
@@ -545,4 +545,22 @@ kohalinks() {
             fi
         fi
     done | sort -r
+}
+
+sq() {
+    (
+        cd $SUPPORT_QUERIES
+        select query in *.sql quit; do
+            case $query in
+                quit)
+                    break
+                ;;
+
+                *)
+                    echo "wget -q -O - http://bywatersolutions.github.io/koha_support_queries/$query | sudo koha-mysql"
+                    break
+                ;;
+            esac
+        done
+    )
 }
