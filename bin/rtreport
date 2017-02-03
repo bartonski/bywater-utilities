@@ -25,8 +25,10 @@ sub run_watchcat_query {
 
 sub cleanup_sql {
     my @sql = @_;
+    return unless defined $sql[0];
     while( $sql[0] !~ /^(savedsql: )/ ) {
         shift @sql;
+        return () unless( scalar @sql )
     }
     $sql[0] =~ s/savedsql: //;
     return @sql;
@@ -92,8 +94,6 @@ if( defined $query{sql_params} ) {
     say "                   " . $uri->as_string;
 }
 
-if( scalar @sql ){
-    @sql = cleanup_sql( @sql );
-    say  join( "\n", "", "=== SQL ===", @sql, "===========" )
-}
+@sql = cleanup_sql( @sql );
+say  join( "\n", "", "=== SQL ===", @sql, "===========" ) if ( scalar @sql )
 
