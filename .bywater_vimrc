@@ -1,0 +1,60 @@
+
+function! DoTicket()
+  for lineno in range(a:firstline, a:lastline)
+    let line = getline(lineno)
+    let line = substitute( line, '\s\+\(open\|onhold\|closed\|resolved\|needsinfo\)\s\+\(Support\|Reports\|Development\|Systems\|Bugs\|Migrations\).*', '', 'e' )
+    let line = substitute( line, '\s\+\(Support\|Reports\|Development\|Systems\|Bugs\|Migrations\)\s\+\(open\|onhold\|closed\|resolved\|needsinfo\).*', '', 'e' )
+    let line = substitute( line, '\d\+\s\+\(years\|months\|weeks\|days\|hours\|minutes\)\s\+\(ago\s\+\)*', ' -- ', 'e' )
+    let line = substitute( line, '^#*\(\<[0-9]\+\>\)[^ ]*[ ]\+', 'ticket \1 | UPDATED | ', 'e' )
+    call setline(lineno, line)
+  endfor
+endfunction
+command! -range Ticket <line1>,<line2>call DoTicket()
+
+function! DoDayNote()
+    %call DoTicket()
+    g/^#\s\+Subject/d
+    g/^Ticket\s\+Reminder/d
+    g/ï/d
+    g/Â/d
+    %s/^My/My/
+    %s/\n -- / -- /
+    g/^Barton Support Dashboard$/d
+    g/^Basics$/d
+    g/^Content$/d
+    g/^Subscription$/d
+    g/^Show$/d
+    g/^Search\.\.\.$/d
+    g/Daily Dashboard: Barton Support/d
+    g/^staff.com@ticket.bywatersolutions.com <staff.com@ticket.bywatersolutions.com>/d
+    g/^To: barton@bywatersolutions.com/d
+    g/You may edit this dashboard and your subscription to it in RT./d
+endfunction
+command! Daynote call DoDayNote()
+
+function! DoRtReport( shortname, url )
+    echom '! /home/barton/Employer/bywater/bin/rtreport' shellescape(a:shortname) shellescape(a:url)
+    execute '. ! /home/barton/Employer/bywater/bin/rtreport' shellescape(a:shortname) shellescape(a:url)
+endfunction
+command! Rtreport call DoRtReport()
+
+function! DoFormatSQL()
+    s/select/SELECT/
+    s/from/FROM/
+    s/where/WHERE/
+    s/inner/INNER/g
+    s/join/JOIN/g
+    s/left/LEFT/g
+    s/group/GROUP/g
+    s/by/BY/g
+    s/and/AND/g
+    s/\(SELECT\|FROM\|WHERE\|GROUP BY\)\s\+/\1    /g
+endfunction
+
+command! FormatSQL call DoFormatSQL()    
+
+function! CloseTicket()
+    s/UPDATED/CLOSED /
+endfunction
+
+command! Close call CloseTicket()
