@@ -442,7 +442,7 @@ today() { local d="$(date --rfc-3339='date')"; echo "Today: $d" ; }
 # Daily wrap
 dw() {
     checkdir "$EMPLOYER_PATH/daynotes/"
-    local notefile="$EMPLOYER_PATH/daynotes/$(dts).note.txt"
+    local notefile="$EMPLOYER_PATH/daynotes/$(date +%Y%m%d).note.txt"
     echo "Daily Wrap-up ( $( date +'%a %b %d, %Y') )"
     sed -n '1,/^---- 1/p' $notefile
     local EOB="$(sed -n '1,/^---- 1/p' $notefile | grep EOB)"
@@ -476,7 +476,7 @@ dn() {
 # Open daily notes. Print wrap-up when vim closes.
 daynote() {
     checkdir "$EMPLOYER_PATH/daynotes/"
-    local notefile="/home/barton/Employer/bywater/daynotes/$(dts).note.txt"
+    local notefile="/home/barton/Employer/bywater/daynotes/$(date +%Y%m%d).note.txt"
     if [[ ! -e $notefile ]]
     then
     cat > $notefile << DAYNOTE
