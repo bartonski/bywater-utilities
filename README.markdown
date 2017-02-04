@@ -1,3 +1,5 @@
+## To install
+
 The environment variable `$EMPLOYER_PATH` should be exported by your shell startup.
 
 The file .bywater is meant to be sourced at shell startup,
@@ -29,3 +31,7 @@ be added to `.bashrc`, or a file sourced by `.bashrc`:
         source $EMPLOYER_RC
     fi
 
+## Dependencies
+
+* git
+* vim-gtk
