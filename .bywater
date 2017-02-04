@@ -19,6 +19,13 @@ fi
 
 # Shell Functions
 
+# Checks for the existance of a directory; if it does not exist, creates it.
+checkdir() {
+    if [ ! -d $0 ]; then
+        mkdir -p $0
+    fi
+}
+
 # Takes rt ticket number as argument, opens ticket in browser.
 ticket() {
     local ticket_url="${RTSERVER}Ticket/Display.html?id=${1}"
@@ -434,7 +441,8 @@ today() { local d="$(date --rfc-3339='date')"; echo "Today: $d" ; }
 
 # Daily wrap
 dw() {
-    local notefile="/home/barton/Employer/bywater/daynotes/$(dts).note.txt"
+    checkdir "$EMPLOYER_PATH/daynotes/"
+    local notefile="$EMPLOYER_PATH/daynotes/$(dts).note.txt"
     echo "Daily Wrap-up ( $( date +'%a %b %d, %Y') )"
     sed -n '1,/^---- 1/p' $notefile
     local EOB="$(sed -n '1,/^---- 1/p' $notefile | grep EOB)"
@@ -467,6 +475,7 @@ dn() {
 
 # Open daily notes. Print wrap-up when vim closes.
 daynote() {
+    checkdir "$EMPLOYER_PATH/daynotes/"
     local notefile="/home/barton/Employer/bywater/daynotes/$(dts).note.txt"
     if [[ ! -e $notefile ]]
     then
