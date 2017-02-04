@@ -21,8 +21,8 @@ fi
 
 # Checks for the existance of a directory; if it does not exist, creates it.
 checkdir() {
-    if [ ! -d $0 ]; then
-        mkdir -p $0
+    if [ ! -d $1 ]; then
+        mkdir -p $1
     fi
 }
 
