@@ -35,3 +35,5 @@ be added to `.bashrc`, or a file sourced by `.bashrc`:
 
 * git
 * vim-gtk
+* Modern::Perl (via libmodern-perl-perl)
+* cpanminus
