@@ -150,6 +150,25 @@ opacurl () {
     set +x
 }
 
+_sugarlookup ()
+{
+    COMPREPLY=();
+    local word="${COMP_WORDS[COMP_CWORD]}";
+    local linkfile=$HOME/Support/notes/ticketlinks.txt
+    COMPREPLY=($(compgen -W "$(cut -d : -f 1 $linkfile | sort -u | egrep -v '^($| |#)')" -- "$word"))
+    # if [ "$COMP_CWORD" -eq 1 ]; then
+    #     COMPREPLY=($(compgen -W "$(cut -d : -f 1 $linkfile | sort -u | egrep -v '^($| |#)')"));
+    # else
+    #     local words=("${COMP_WORDS[@]}");
+    #     unset words[0];
+    #     unset words[$COMP_CWORD];
+    #     COMPREPLY=($(compgen -W "$(cut -d : -f 1 $linkfile | sort -u | egrep -v '^($| |#)')" ));
+    # fi
+}
+
+complete -F _sugarlookup kohaurl
+complete -F _sugarlookup sugar
+
 # look up opac Staff client URL in 'ticketlinks.txt', open URL in web browser
 kohaurl () {
     local linkfile=$HOME/Support/notes/ticketlinks.txt
@@ -194,6 +213,11 @@ wcatsugar() {
 kohaversion() {
     echo watchcat -tkohav -k$1
     watchcat -tkohav -k$1
+}
+
+# Grep larryb's stash of cron scripts on annon.
+grepcrons() {
+    ssh $BYWATER_GATEWAY grep --color "${1}" '~larry/crons_backups/crons.*'
 }
 
 # koha* and opac* below all open various staff client or opac urls.
@@ -459,18 +483,19 @@ porttest() { echo $'\c]quit' | xsel ; telnet $1 $2; }
 #alias lynx='lynx -accept_all_cookies'
 
 # Very similar to 'dw' above. This one is actually used internally in 'daynote'
-dn() {
-    local notefile=$1
-    echo $notefile
-    echo
-    echo "Daily Wrap-up ( $( date +'%a %b %d, %Y') )"
-    sed -n '/^---- Done Today/,/^----/p' $notefile | grep -v '^----'
-    local EOB="$(sed -n '/^---- Done Today/,/^----/p' $notefile | grep EOB)"
+dn () 
+{ 
+    local notefile=$1;
+    echo $notefile;
+    echo;
+    echo "Daily Wrap-up ( $( date +'%a %b %d, %Y') )";
+    sed -n '/^---- Done Today/,/^----/p' $notefile | grep --color=auto --color=auto -v '^----';
+    local EOB="$(sed -n '/^---- Done Today/,/^----/p' $notefile | grep EOB)";
     if [[ ! -z $EOB ]]; then
-        echo "Un-closed EOB items:"
-        echo "$EOB"
-    fi
-    sed -n '/^---- Done Today/,/^----/p' $notefile | stdin_gmtix.pl
+        echo "Un-closed EOB items:";
+        echo "$EOB";
+    fi;
+    sed -n '/^---- Done Today/,/^----/p' $notefile | grep --color=auto '^ticket' | stdin_gmtix.pl
 }
 
 # Open daily notes. Print wrap-up when vim closes.

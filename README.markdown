@@ -11,6 +11,8 @@ be added to `.bashrc`, or a file sourced by `.bashrc`:
     export EMPLOYER="bywater"
     export EMPLOYER_PATH="$HOME/Employer/${EMPLOYER}"
     export EMPLOYER_RC="${EMPLOYER_PATH}/.${EMPLOYER}"
+    ## https://mail.google.com/mail/u/0/
+    export GMAIL_URL="YOUR_GMAIL_URL"
 
     ## If annon is down, uncomment the following line to enable 'assh' and 'sassh' functions.
     #export BYWATER_GATEWAY='echor.bywatersolutions.com'
