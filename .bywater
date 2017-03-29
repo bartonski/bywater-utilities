@@ -220,6 +220,10 @@ grepcrons() {
     ssh $BYWATER_GATEWAY grep --color "${1}" '~larry/crons_backups/crons.*'
 }
 
+grepbug() {
+    sassh bwsdev grep --color "${@}" '/var/lib/koha/community/kohaclone/misc/release_notes/*' | grep "${@}"
+}
+
 # koha* and opac* below all open various staff client or opac urls.
 # Some of these take additional arguments.
 # Usage: (koha*|opac*) SHORTNAME [ARGS]
