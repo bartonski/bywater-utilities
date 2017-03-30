@@ -505,7 +505,7 @@ dn ()
 # Open daily notes. Print wrap-up when vim closes.
 daynote() {
     checkdir "$EMPLOYER_PATH/daynotes/"
-    local notefile="/home/barton/Employer/bywater/daynotes/$(date +%Y%m%d).note.txt"
+    local notefile="$EMPLOYER_PATH/daynotes/$(date +%Y%m%d).note.txt"
     if [[ ! -e $notefile ]]
     then
     cat > $notefile << DAYNOTE
