@@ -17,6 +17,34 @@ then
     export BYWATER_GATEWAY='annon.bywatersolutions.com'
 fi
 
+## There should probably be some checks done here to see if
+##   the shell is interactive and has access to the desktop
+##   e.g. checking $DISPLAY if running under X.
+case "$OSTYPE" in
+  darwin*)  _alias_open_list="open";;
+  *)        _alias_open_list="xdg-open echo";;
+esac
+
+for OPEN in $_alias_open_list
+do
+    which "$OPEN" > /dev/null && break;
+done
+
+## If we're using X, and $DISPLAY is not set, just echo
+## the URL or file name.
+if [[ $OPEN -eq "xdg-open" && -z $DISPLAY ]]; then
+	OPEN="echo"
+fi
+
+## We need to use firefox for some things; use it unless
+## $OPEN is set to echo -- if it is; use echo instead.
+
+if [[ $OPEN -ne "echo" && -e "$(which firefox)" ]]; then
+    FIREFOX="$(which firefox)"
+else
+    FIREFOX="echo"
+fi
+
 # Shell Functions
 
 # Checks for the existance of a directory; if it does not exist, creates it.
@@ -30,7 +58,7 @@ checkdir() {
 ticket() {
     local ticket_url="${RTSERVER}Ticket/Display.html?id=${1}"
     echo "$ticket_url"
-    xdg-open "$ticket_url"
+    $OPEN "$ticket_url"
     sleep 1
     echo
 }
@@ -39,14 +67,14 @@ ticket() {
 partner_ticket() {
     local partner_url="${RTSERVER}SelfService/Display.html?id=${1}"
     echo "$partner_url"
-    xdg-open "$partner_url"
+    $OPEN "$partner_url"
     sleep 1
     echo
 }
 
 
 # look up bug in bugzilla
-bug() { xdg-open http://${BUGZILLA}/bugzilla3/show_bug.cgi?id=${1}; sleep 1; echo; }
+bug() { $OPEN http://${BUGZILLA}/bugzilla3/show_bug.cgi?id=${1}; sleep 1; echo; }
 
 # 'annon ssh' -- ssh to remote server via annon.
 assh() {
@@ -115,10 +143,7 @@ sugar()
     then
         grep $shortname $sugarfile | cut -d: -f 2-
     else
-        if [ ! -x $DISPLAY ]
-        then
-            firefox "$sugarurl" > /dev/null 2> /dev/null &
-        fi
+        $FIREFOX "$sugarurl" > /dev/null 2> /dev/null &
         append_shortname $shortname 'xxx: xxx:' $sugarfile
         append_shortname $shortname 'xxx: Sugar URL: ' $sugarfile
         append_shortname $shortname 'xxx: Staff: ' $sugarfile
@@ -133,7 +158,7 @@ sugarff() {
     local shortname=$1
     local linkfile=$HOME/Support/notes/ticketlinks.txt
     local sugarurl="$(sed -n "/$shortname: Sugar URL: /s/^.*Sugar URL: //p" $linkfile )"
-    firefox "$sugarurl" 2> /dev/null &
+    $FIREFOX "$sugarurl" 2> /dev/null &
 }
 
 # look up opac URL in 'ticketlinks.txt', open URL in web browser
@@ -145,7 +170,7 @@ opacurl () {
         opac="$(grep ^${1}: $linkfile | grep 'Opac' | cut -d ':' -f 3- | sed 's|/$||')"
         url="${opac}/${2}"
         echo $url
-        xdg-open $url
+        $OPEN $url
     fi
     set +x
 }
@@ -177,7 +202,7 @@ kohaurl () {
         staffclient="$(grep ^${1}: $linkfile | grep Staff | cut -d ':' -f 3- | sed 's|/$||')"
         url="${staffclient}/${2}"
         echo $url
-        xdg-open $url
+        $OPEN $url
     fi
 }
 
@@ -189,7 +214,7 @@ kohaff () {
         staffclient="$(grep ^${1}: $linkfile | grep Staff | cut -d ':' -f 3- | sed 's|/$||')"
         url="${staffclient}/${2}"
         echo $url
-        /usr/bin/firefox $url 2> /dev/null &
+        $FIREFOX $url 2> /dev/null &
     fi
 }
 
@@ -345,7 +370,7 @@ opacselfcheck() {
 
 # Library of congress marc reference.
 marcrefrence() {
-    xdg-open "http://www.loc.gov/marc/bibliographic/bd${1}.html"
+    $OPEN "http://www.loc.gov/marc/bibliographic/bd${1}.html"
 }
 
 # Just because I probably won't remember "opacselfcheck"
@@ -457,7 +482,7 @@ bugrelease() {
 # search for terms on bywater wiki.
 bwiki() {
     local searchparams="$(sed 's/ \+/+/' <<< "$*")"
-    xdg-open "http://wiki.bywatersolutions.com/doku.php?do=search&id=${searchparams}"
+    $OPEN "http://wiki.bywatersolutions.com/doku.php?do=search&id=${searchparams}"
 }
 
 # Reformat arguments (as copied from IRC) and put them into 'xsel', ready for pasting.
