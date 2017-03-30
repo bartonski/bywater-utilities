@@ -83,12 +83,12 @@ assh() {
         kohaversion "$@"
     fi
     #ssh $BYWATER_GATEWAY ssh "$@" "egrep \'KOHA_CONF|PERL5LIB|ErrorLog\'" '/etc/apache2/sites-enabled/*'
-    time ssh -t $BYWATER_GATEWAY ssh "$@";
+    time ssh -t ${BYWATER_USER}@$BYWATER_GATEWAY ssh "$@";
 }
 
 # 'Straight' assh -- use when you want to keep the integrity of STDIN / STDOUT,
 # e.g. $ tar cf - backup.20150719.sql.gz | sassh bwsdev tar xvf -
-sassh() { ssh  $BYWATER_GATEWAY ssh "$@"; }
+sassh() { ssh  ${BYWATER_USER}@$BYWATER_GATEWAY ssh "$@"; }
 
 # Copy file from remote server to local /tmp
 asshcp() {
@@ -105,16 +105,16 @@ asshcp() {
 # remove host key from annon.
 asshrmkey() {
     set -x
-    ssh $BYWATER_GATEWAY ssh-keygen -R "$1"
+    ssh ${BYWATER_USER}@$BYWATER_GATEWAY ssh-keygen -R "$1"
     sleep 2
-    time ssh -t $BYWATER_GATEWAY ssh "$1"
+    time ssh -t ${BYWATER_USER}@$BYWATER_GATEWAY ssh "$1"
     set +x
 }
 
 # Look up shortname
 shortname() {
-    ssh  $BYWATER_GATEWAY ./bin/shortname "$1"
-    ssh  $BYWATER_GATEWAY grep "$1" /etc/hosts;
+    ssh  ${BYWATER_USER}@$BYWATER_GATEWAY ./bin/shortname "$1"
+    ssh  ${BYWATER_USER}@$BYWATER_GATEWAY grep "$1" /etc/hosts;
 }
 
 # I don't keep that much data locally, so I never use this...
@@ -221,7 +221,7 @@ kohaff () {
 # run watchcat remotely.
 watchcat() {
     echo "watchcat " "$@"
-    ssh $BYWATER_GATEWAY watchcat "$@"
+    ssh ${BYWATER_USER}@$BYWATER_GATEWAY watchcat "$@"
 }
 
 # get urls via watchcat
