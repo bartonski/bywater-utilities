@@ -1,0 +1,50 @@
+# Exported Variables
+#export RTUSER="${USER}@bywatersolutions.com"
+export RTSERVER=https://ticket.bywatersolutions.com
+export BUGZILLA=bugs.koha-community.org
+
+if [ ! -z $EMPLOYER_PATH ]
+then
+    export PATH="$PATH:${EMPLOYER_PATH}/bin"
+fi
+
+# If annon is down, export BYWATER_GATEWAY='echor' in the calling script.
+if [ -z $BYWATER_GATEWAY ]
+then
+    export BYWATER_GATEWAY='annon.bywatersolutions.com'
+fi
+
+# TODO: see https://superuser.com/questions/472598/pbcopy-for-windows#472601 for windows.
+case "$OSTYPE" in
+  darwin*)  _alias_open_list="open"
+            CLIPCLIPBOARD='pbcopy'
+            CLIPCOPY='pbcopy'
+            CLIPPASTE='pbpaste'
+    ;;
+  *)        _alias_open_list="xdg-open echo"
+            CLIPCLIPBOARD='xsel -i --clipboard'
+            CLIPCOPY='xsel -i'
+            CLIPPASTE='xsel -o'
+    ;;
+esac
+
+for OPEN in $_alias_open_list
+do
+    which "$OPEN" > /dev/null && break;
+done
+
+## If we're using X, and $DISPLAY is not set, just echo
+## the URL or file name.
+if [[ $OPEN == "xdg-open" && -z $DISPLAY ]]; then
+	OPEN="echo"
+fi
+
+## We need to use firefox for some things; use it unless
+## $OPEN is set to echo -- if it is; use echo instead.
+
+if [[ $OPEN != "echo" && -e "$(which firefox)" ]]; then
+    FIREFOX="$(which firefox)"
+else
+    FIREFOX="echo"
+fi
+

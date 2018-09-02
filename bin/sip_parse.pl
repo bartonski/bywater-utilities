@@ -87,10 +87,10 @@ my $sip_format = {
             {   field_name => 'Header'
               , fixed_width_fields => [
                       { field_name => 'Command ID'           , pack_template => 'A',  length        => 2   }
-                    , { field_name => 'OK'    , pack_template => 'A' , length        => 1   }
-                    , { field_name => 'Renewal OK'             , pack_template => 'A' , length        => 1   }
-                    , { field_name => 'Magnetic media'             , pack_template => 'A' , length        => 1   }
-                    , { field_name => 'Desensitize'             , pack_template => 'A' , length        => 1   }
+                    , { field_name => 'OK'                   , pack_template => 'A' , length        => 1   }
+                    , { field_name => 'Renewal OK'           , pack_template => 'A' , length        => 1   }
+                    , { field_name => 'Magnetic media'       , pack_template => 'A' , length        => 1   }
+                    , { field_name => 'Desensitize'          , pack_template => 'A' , length        => 1   }
                     , { field_name => 'Transaction Year'     , pack_template => 'A' , length        => 4   }
                     , { field_name => 'Transaction Month'    , pack_template => 'A' , length        => 2   }
                     , { field_name => 'Transaction Day'      , pack_template => 'A' , length        => 2   }
@@ -247,7 +247,6 @@ my $sip_format = {
                     , { field_name => 'Transaction date'  , pack_template => 'A' , length => 18  }
                     , { field_name => 'Summary'           , pack_template => 'A' , length => 10  }
                   ]
-              ,
             }   
             , { field_name => 'Institution ID'    }
             , { field_name => 'Patron identifier' }

@@ -3,7 +3,7 @@ function! DoTicket()
   for lineno in range(a:firstline, a:lastline)
     let line = getline(lineno)
     let line = substitute( line, '\s\+\(open\|onhold\|closed\|resolved\|needsinfo\)\s\+\(Support\|Reports\|Development\|Systems\|Bugs\|Migrations\).*', '', 'e' )
-    let line = substitute( line, '\s\+\(Support\|Reports\|Development\|Systems\|Bugs\|Migrations\)\s\+\(open\|onhold\|closed\|resolved\|needsinfo\).*', '', 'e' )
+    let line = substitute( line, '\s\+\(Support\|Reports\|Development\|Systems\|Bugs\|Migrations\)\s\+\(open\|onhold\|closed\|resolved\|needsinfo\|answered\).*', '', 'e' )
     let line = substitute( line, '\d\+\s\+\(years\|months\|weeks\|days\|hours\|minutes\)\s\+\(ago\s\+\)*', ' -- ', 'e' )
     let line = substitute( line, '^#*\(\<[0-9]\+\>\)[^ ]*[ ]\+', 'ticket \1 | UPDATED | ', 'e' )
     call setline(lineno, line)
@@ -47,7 +47,7 @@ function! DoFormatSQL()
     s/left/LEFT/g
     s/group/GROUP/g
     s/by/BY/g
-    s/and/AND/g
+    s/\<and\>/AND/g
     s/\(SELECT\|FROM\|WHERE\|GROUP BY\)\s\+/\1    /g
 endfunction
 
@@ -58,3 +58,9 @@ function! CloseTicket()
 endfunction
 
 command! Close call CloseTicket()
+
+function! BugTicket()
+    s/UPDATED/BUG    /
+endfunction
+
+command! Bug call BugTicket()

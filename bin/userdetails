@@ -1,0 +1,52 @@
+#! /bin/sh
+
+# USAGE: userdetails ORGANIZATION
+# reads data from STDIN, lines should be pipe delimited
+# RealName|EmailAddress
+# 
+# Single user:
+# 
+# 
+# echo "Catherine-Cox@Redwoods.edu|Catherine Cox" | userdetails "College of the Redwoods"
+# 
+#  Multiple users:
+#
+# Let's say that you have /tmp/citruscouny.txt:
+#
+# David Boyer|Dave.Boyer@citruslibraries.org
+# Twila Colia|Twila.Colia@citruslibraries.org
+# Eric Head|Eric.Head@citruslibraries.org
+# Sandy Allgood|Sandy.Allgood@citruslibraries.org
+# Karen Fellows|Karen.Fellows@citruslibraries.org
+#
+# cat /tmp/citruscouny.txt | userdetails "Citrus County Library System"
+
+Organization="$*"
+
+IFS="|"
+while read RealName EmailAddress
+do
+    printf "id: user/new\n"
+    printf "Name: $EmailAddress\n"
+    printf "EmailAddress: $EmailAddress\n"
+    printf "Organization: $Organization\n"
+    printf "RealName: $RealName -- $Organization\n"
+    printf "Password: changeme\n"
+    printf "\n"
+
+    printf "# New user for $Organization\n" > "/tmp/$Organization.markdown"
+    printf "Hi $RealName, \n" >> "/tmp/$Organization.markdown"
+    printf "\n" >> "/tmp/$Organization.markdown"
+    printf "I've just added a new account for you in our ticketing system.\n" >> "/tmp/$Organization.markdown"
+    printf "You can log in using the username \n" >> "/tmp/$Organization.markdown"
+    printf "\n" >> "/tmp/$Organization.markdown"
+    printf "    $EmailAddress\n" >> "/tmp/$Organization.markdown"
+    printf "\n" >> "/tmp/$Organization.markdown"
+    printf "and the password\n" >> "/tmp/$Organization.markdown"
+    printf "\n" >> "/tmp/$Organization.markdown"
+    printf "    changeme\n" >> "/tmp/$Organization.markdown"
+    printf "\n" >> "/tmp/$Organization.markdown"
+    printf "Please change the password as soon as you log in.\n" >> "/tmp/$Organization.markdown"
+done
+
+

@@ -1,49 +1,4 @@
-# Exported Variables
-export RTUSER="${USER}@bywatersolutions.com"
-export RTSERVER=http://ticket.bywatersolutions.com/ # Note trailing slash
-export BUGZILLA=bugs.koha-community.org
-
-# TODO: there are references to 'xsel' which aren't portable. Need to
-# create $COPY and $PASTE, which can be populated according to OS.
-
-if [ ! -z $EMPLOYER_PATH ]
-then
-    export PATH="$PATH:${EMPLOYER_PATH}/bin"
-fi
-
-# If annon is down, export BYWATER_GATEWAY='echor' in the calling script.
-if [ -z $BYWATER_GATEWAY ]
-then
-    export BYWATER_GATEWAY='annon.bywatersolutions.com'
-fi
-
-## There should probably be some checks done here to see if
-##   the shell is interactive and has access to the desktop
-##   e.g. checking $DISPLAY if running under X.
-case "$OSTYPE" in
-  darwin*)  _alias_open_list="open";;
-  *)        _alias_open_list="xdg-open echo";;
-esac
-
-for OPEN in $_alias_open_list
-do
-    which "$OPEN" > /dev/null && break;
-done
-
-## If we're using X, and $DISPLAY is not set, just echo
-## the URL or file name.
-if [[ $OPEN -eq "xdg-open" && -z $DISPLAY ]]; then
-	OPEN="echo"
-fi
-
-## We need to use firefox for some things; use it unless
-## $OPEN is set to echo -- if it is; use echo instead.
-
-if [[ $OPEN -ne "echo" && -e "$(which firefox)" ]]; then
-    FIREFOX="$(which firefox)"
-else
-    FIREFOX="echo"
-fi
+source ${EMPLOYER_PATH}/.bywater_environment
 
 # Shell Functions
 
@@ -56,7 +11,15 @@ checkdir() {
 
 # Takes rt ticket number as argument, opens ticket in browser.
 ticket() {
-    local ticket_url="${RTSERVER}Ticket/Display.html?id=${1}"
+    local ticket_url="${RTSERVER}/Ticket/Display.html?id=${1}"
+    echo "$ticket_url"
+    $OPEN "$ticket_url"
+    sleep 1
+    echo
+}
+
+rtmodify() {
+    local ticket_url="${RTSERVER}/Ticket/Modify.html?id=${1}"
     echo "$ticket_url"
     $OPEN "$ticket_url"
     sleep 1
@@ -65,7 +28,7 @@ ticket() {
 
 # Takes rt ticket number as argument, opens self service view of ticket in browser.
 partner_ticket() {
-    local partner_url="${RTSERVER}SelfService/Display.html?id=${1}"
+    local partner_url="${RTSERVER}/SelfService/Display.html?id=${1}"
     echo "$partner_url"
     $OPEN "$partner_url"
     sleep 1
@@ -78,12 +41,16 @@ bug() { $OPEN http://${BUGZILLA}/bugzilla3/show_bug.cgi?id=${1}; sleep 1; echo; 
 
 # 'annon ssh' -- ssh to remote server via annon.
 assh() {
-    if shortname "$@" > /dev/null
-    then
-        kohaversion "$@"
+    if [ -z $1 ]; then # If no arguments, log into $BYWATER_GATEWAY directly.
+        time ssh -t ${BYWATER_USER}@$BYWATER_GATEWAY 
+    else
+        if shortname "$@" > /dev/null
+        then
+            kohaversion "$@"
+        fi
+        #ssh $BYWATER_GATEWAY ssh "$@" "egrep \'KOHA_CONF|PERL5LIB|ErrorLog\'" '/etc/apache2/sites-enabled/*'
+        time ssh -t ${BYWATER_USER}@$BYWATER_GATEWAY ssh "$@";
     fi
-    #ssh $BYWATER_GATEWAY ssh "$@" "egrep \'KOHA_CONF|PERL5LIB|ErrorLog\'" '/etc/apache2/sites-enabled/*'
-    time ssh -t ${BYWATER_USER}@$BYWATER_GATEWAY ssh "$@";
 }
 
 # 'Straight' assh -- use when you want to keep the integrity of STDIN / STDOUT,
@@ -114,7 +81,6 @@ asshrmkey() {
 # Look up shortname
 shortname() {
     ssh  ${BYWATER_USER}@$BYWATER_GATEWAY ./bin/shortname "$1"
-    ssh  ${BYWATER_USER}@$BYWATER_GATEWAY grep "$1" /etc/hosts;
 }
 
 # I don't keep that much data locally, so I never use this...
@@ -134,16 +100,19 @@ sugar()
 {
     sugarfile=$HOME/Support/notes/ticketlinks.txt # Global
     local shortname=$1
-    local sugarurl="http://sugarcrm.bywatersolutions.com/"
-          sugarurl="${sugarurl}index.php?action=UnifiedSearch&module="
-          sugarurl="${sugarurl}Home&search_form=false&advanced="
-          sugarurl="${sugarurl}false&query_string=$shortname"
+    local sugarurl="$(ssh ${BYWATER_USER}@$BYWATER_GATEWAY watchcat -tsugarv -k$shortname | sed -n '/Suite Systems URL: /s/Suite Systems URL: //p')"
+    if [ -z "$sugarurl" ]; then
+        sugarurl="https://sugar2.bywatersolutions.com/"
+        sugarurl="${sugarurl}index.php?action=UnifiedSearch&module="
+        sugarurl="${sugarurl}Home&search_form=false&advanced="
+        sugarurl="${sugarurl}false&query_string=$shortname"
+    fi
     echo "sugar file: $sugarfile"
     if grep -q $shortname $sugarfile
     then
         grep $shortname $sugarfile | cut -d: -f 2-
     else
-        $FIREFOX "$sugarurl" > /dev/null 2> /dev/null &
+        $OPEN "$sugarurl" > /dev/null 2> /dev/null &
         append_shortname $shortname 'xxx: xxx:' $sugarfile
         append_shortname $shortname 'xxx: Sugar URL: ' $sugarfile
         append_shortname $shortname 'xxx: Staff: ' $sugarfile
@@ -162,17 +131,23 @@ sugarff() {
 }
 
 # look up opac URL in 'ticketlinks.txt', open URL in web browser
-opacurl () {
-    set -x
+_opacurl () {
     local linkfile=$HOME/Support/notes/ticketlinks.txt
     if grep "^${1}\>" $linkfile 2>&1 > /dev/null
     then
         opac="$(grep ^${1}: $linkfile | grep 'Opac' | cut -d ':' -f 3- | sed 's|/$||')"
+        echo $opac
+    fi
+}
+
+# look up opac URL in 'ticketlinks.txt', open URL in web browser
+opacurl () {
+    if local opac="$(_opacurl $1)"
+    then
         url="${opac}/${2}"
         echo $url
         $OPEN $url
     fi
-    set +x
 }
 
 _sugarlookup ()
@@ -197,12 +172,23 @@ complete -F _sugarlookup sugar
 # look up opac Staff client URL in 'ticketlinks.txt', open URL in web browser
 kohaurl () {
     local linkfile=$HOME/Support/notes/ticketlinks.txt
-    if grep "^${1}\>" $linkfile 2>&1 > /dev/null
+    if grep "^${1}:" $linkfile 2>&1 > /dev/null
     then
         staffclient="$(grep ^${1}: $linkfile | grep Staff | cut -d ':' -f 3- | sed 's|/$||')"
         url="${staffclient}/${2}"
         echo $url
         $OPEN $url
+    fi
+}
+
+# look up opac Staff client URL in 'ticketlinks.txt'. Print link without opening it.
+kohaprinturl () {
+    local linkfile=$HOME/Support/notes/ticketlinks.txt
+    if grep "^${1}:" $linkfile 2>&1 > /dev/null
+    then
+        staffclient="$(grep ^${1}: $linkfile | grep Staff | cut -d ':' -f 3- | sed 's|/$||')"
+        url="${staffclient}/${2}"
+        echo $url
     fi
 }
 
@@ -230,8 +216,12 @@ wcaturl() {
 }
 
 # get surgar urls via watchcat
-wcatsugar() {
-    watchcat -tsugarv -k$1
+sugarv() {
+    watchcat -tsugarv -k$1 | sed -n 's/http:/https:/p'
+}
+
+wclist() {
+    watchcat -twclist -k$1
 }
 
 # look up koha version using watchcat.
@@ -240,9 +230,20 @@ kohaversion() {
     watchcat -tkohav -k$1
 }
 
+getcrons() {
+    echo watchcat -tgetcrons -k$1
+    watchcat -tgetcrons -k$1 | less
+}
+
+
+ckextras() {
+    echo watchcat -tckextras -k$1
+    watchcat -tckextras -k$1
+}
+
 # Grep larryb's stash of cron scripts on annon.
 grepcrons() {
-    ssh $BYWATER_GATEWAY grep --color "${1}" '~larry/crons_backups/crons.*'
+    ssh $BYWATER_GATEWAY egrep --color "${1}" '~larry/crons_backups/crons.*'
 }
 
 grepbug() {
@@ -340,6 +341,18 @@ kohareportnum() {
     kohaurl "$1" "cgi-bin/koha/reports/guided_reports.pl?reports=${2}&phase=Show+SQL";
 }
 
+# Edit a report by number
+kohaeditreport () 
+{ 
+    kohaurl "$1" "cgi-bin/koha/reports/guided_reports.pl?phase=Edit%20SQL&reports=${2}"
+}
+
+
+# Open a report by number
+kohafixreport() {
+    kohaurl "$1" "cgi-bin/koha/reports/guided_reports.pl?phase=Use%20saved&op=convert&report_id=${2}";
+}
+
 # Koha tools page
 kohatools() {
     kohaurl "$1" "cgi-bin/koha/tools/tools-home.pl"
@@ -362,6 +375,24 @@ kohabib() {
 kohadlbib() {
     kohaurl "$1" "cgi-bin/koha/catalogue/export.pl?format=utf8&op=export&bib=$2"
 }
+
+
+kohaviewlog() {
+    # TODO: we could run a case statement on $module, then prompt for object.
+    select module in FINES CIRCULATION MEMBERS SERIAL AUTHORITIES SYSTEMPREFERENCE REPORTS CATALOGUING HOLDS CRONJOBS
+    do
+        kohaprinturl "$1" "cgi-bin/koha/tools/viewlog.pl?do_it=1&modules=${module}"
+        echo "append &object=YOUR_OBJECT:"
+        echo "  FINES, CIRCULATION and members MEMBERS: borrowernumber"
+        echo "  SERIAL: subscription.subscriptionid"
+        echo "  AUTHORITIES: auth_header.authid"
+        echo "  REPORTS: saved_sql.id"
+        echo "  CATALOGUING: itemnumber or biblionumber"
+        echo "  HOLDS: reserve_id"
+        break;
+    done
+}
+
 
 # Self Check Out
 opacselfcheck() {
@@ -421,9 +452,9 @@ rttime () {
 qm ()
 {
     qm="$(querymarc $1)";
-    echo "select $qm as '$1' from biblioitems where $qm != '' limit 1;";
-    echo "select $qm as '$1', title from biblioitems inner join biblio using (biblionumber) where $qm != '' limit 1;";
-    echo "select marcxml from biblioitems where $qm != '' limit 1;"
+    echo "select $qm as '$1' from biblio_metadata where $qm != '' limit 1;";
+    echo "select $qm as '$1', title from biblio_metadata inner join biblio using (biblionumber) where $qm != '' limit 1;";
+    echo "select marcxml from biblio_metadata where $qm != '' limit 1;"
 }
 
 # This was something that I added when I was working on zebra indexing. Pay it very little mind...
@@ -486,7 +517,7 @@ bwiki() {
 }
 
 # Reformat arguments (as copied from IRC) and put them into 'xsel', ready for pasting.
-kbticket() { echo "${@}" | sed 's/^.* <samwise> Ticket //; s/(open): //; s/ - http:.*//' | xsel; }
+kbticket() { echo "${@}" | sed 's/^.* <samwise> Ticket //; s/(open): //; s/ - http:.*//' | $CLIPCOPY; }
 
 
 # Today's date, in the format YYYY-MM-DD
@@ -500,14 +531,17 @@ dw() {
     sed -n '1,/^---- 1/p' $notefile
     local EOB="$(sed -n '1,/^---- 1/p' $notefile | grep EOB)"
     if [[ ! -z $EOB ]]; then
-        echo "Un-closed EOB items:"
+        echo 
+        echo "============================ Un-closed EOB items: ============================="
         echo "$EOB"
+        echo "==============================================================================="
+        echo 
     fi
 }
 
 # Telnet to a given domain and port, see if the port is open. The commands to exit telnet
 # are left in the copy/paste buffer.
-porttest() { echo $'\c]quit' | xsel ; telnet $1 $2; }
+porttest() { echo $'\c]quit' | $CLIPCOPY ; telnet $1 $2; }
 
 #alias lynx='lynx -accept_all_cookies'
 
@@ -521,16 +555,28 @@ dn ()
     sed -n '/^---- Done Today/,/^----/p' $notefile | grep --color=auto --color=auto -v '^----';
     local EOB="$(sed -n '/^---- Done Today/,/^----/p' $notefile | grep EOB)";
     if [[ ! -z $EOB ]]; then
-        echo "Un-closed EOB items:";
-        echo "$EOB";
+        echo 
+        echo "============================ Un-closed EOB items: ============================="
+        echo "$EOB"
+        echo "==============================================================================="
+        echo 
     fi;
     sed -n '/^---- Done Today/,/^----/p' $notefile | grep --color=auto '^ticket' | stdin_gmtix.pl
+    echo
+    echo "Daily wrap-up emails"
+    echo "https://mail.google.com/mail/u/1/#search/Daily+Wrap-up"
+    checkdir "$EMPLOYER_PATH/daynotes/markdown/"
+    sed -n '/^---- Personal Notes/,/^----/p' $notefile | grep -v '^----' > \
+        "$EMPLOYER_PATH/daynotes/markdown/$(date +%Y%m%d)_notes.markdown"
+    cd $EMPLOYER_PATH/daynotes/markdown/
+    local htmlfile=$(bmd $(date +%Y%m%d)_notes.markdown)
+    $OPEN "$htmlfile"
 }
 
 # Open daily notes. Print wrap-up when vim closes.
 daynote() {
     checkdir "$EMPLOYER_PATH/daynotes/"
-    local notefile="$EMPLOYER_PATH/daynotes/$(date +%Y%m%d).note.txt"
+    notefile="$EMPLOYER_PATH/daynotes/$(date +%Y%m%d).note.txt"
     if [[ ! -e $notefile ]]
     then
     cat > $notefile << DAYNOTE
@@ -542,7 +588,7 @@ What I Learned:
 
 ---- My Tickets
 
----- Personal Notes
+Other tickets
 
 ---- Queries
 -- 
@@ -563,25 +609,7 @@ foo
 ...
 ...
 
----- What do I do at my desk?
-
----- What do I want to do that I'm not?
-
----- What's working
-
----- What's not working
-
----- What am I putting off?
-
----- I have no place to put ...
-
----- I can't ...
-
----- I can never find
-
----- I'm losing a lot of money on ...
-
----- Disorganization makes me feel ...
+---- Personal Notes
 
 ---- 
 DAYNOTE
@@ -593,7 +621,10 @@ DAYNOTE
 
 # Reads argument list containing RT ticket numbers, search for unread emails containing those tickets.
 gmtix() {
+    echo ""
+    echo "Emails today about tickets I've touched."
     perl -E 'say "https://mail.google.com/mail/u/1/#search/(from%3Asupport%40bywatersolutions.com)+is%3Aunread+subject%3A(" . join( "+OR+", @ARGV ) .  ")"' $@;
+    echo ""
 }
 
 # Look up opac and staff client URLs. (Somewhat) suitable for pasting into vim for 'sugar' above.
@@ -632,3 +663,101 @@ sq() {
         done
     )
 }
+
+wiki() {
+    $OPEN http://wiki.bywatersolutions.com/
+}
+
+dlmarc ()
+{
+    local linkfile=$HOME/Support/notes/ticketlinks.txt;
+    if grep "^${1}\>" $linkfile 2>&1 > /dev/null; then
+        opac="$(grep ^${1}: $linkfile | grep 'Opac' | cut -d ':' -f 3- | sed 's|/$||')";
+        url="${opac}/cgi-bin/koha/opac-export.pl?op=export&bib=${2}&format=utf8";
+        marcfile="${1}.${2}.marc"
+        echo $url;
+        echo $marcfile;
+        wget --no-check-certificate -O $marcfile $url;
+    fi;
+}
+
+dlmarcxml ()
+{
+    local linkfile=$HOME/Support/notes/ticketlinks.txt;
+    if grep "^${1}\>" $linkfile 2>&1 > /dev/null; then
+        opac="$(grep ^${1}: $linkfile | grep 'Opac' | cut -d ':' -f 3- | sed 's|/$||')";
+        url="${opac}/cgi-bin/koha/opac-export.pl?op=export&bib=${2}&format=marcxml";
+        marcfile="${1}.${2}.marcxml"
+        echo $url;
+        echo $marcfile;
+        wget --no-check-certificate -O $marcfile $url;
+    fi;
+}
+
+ggrep ()
+{
+    git grep "${@}" -- './*' ':(exclude)misc/translator/po' ':(exclude)installer/data/mysql' ':(exclude)t/edi_testfiles'
+}
+
+rtcomponent() {
+    local subject="$1"
+    echo "http://ticket.bywatersolutions.com/Search/Results.html?Format=%27__CustomField.%7BComponent%2FModule%7D__%27%2C%0A%27%3Cb%3E%3Ca%20href%3D%22__WebPath__%2FTicket%2FDisplay.html%3Fid%3D__id__%22%3E__id__%3C%2Fa%3E%3C%2Fb%3E%2FTITLE%3A%23%27%2C%0A%27%3Cb%3E%3Ca%20href%3D%22__WebPath__%2FTicket%2FDisplay.html%3Fid%3D__id__%22%3E__Subject__%3C%2Fa%3E%3C%2Fb%3E%2FTITLE%3ASubject%27&Order=ASC%7CASC%7CASC%7CASC&OrderBy=id%7C%7C%7C&Query=Subject%20LIKE%20%27${subject}%27%20AND%20%27CF.%7BComponent%2FModule%7D%27%20IS%20NOT%20NULL&RowsPerPage=50&SavedChartSearchId=new&SavedSearchId=new"
+}
+
+kohadoc() {
+    $OPEN file:///home/barton/Employer/bywater/support/notes/translate.koha-community.org/manual/16.11/en/html-desktop/index.html
+}
+
+c() {
+    local f=/tmp/sql.sql
+    rm $f
+    $CLIPPASTE > $f
+    egrep '\<(items|statistics|location)\>' $f
+    echo
+    echo $f
+}
+
+rtrequestor() {
+    if [[ ! -z "$*" ]]; then
+        rt ls -l -t ticket "RequestorGroup = '$*' AND Created > '2017-01-01'" \
+            | sed -n '/Requestors: /{s/Requestors: //p}' \
+            | sed 's/, /\n/' | sort | uniq -c | sort -n
+    fi
+}
+
+rtlistnew() {
+    rt list "( Status = 'new' ) OR (  Status != 'new' AND Created > '7 days ago' AND 'CF.{Component/Module}' IS NULL ) OR (  Owner = 'Nobody' AND Status != 'resolved' AND Status != 'answered' )"
+}
+
+# echo ticket subject line matching rt ticket regex.
+tsubject() {
+    echo "[ticket.bywatersolutions.com #$1]"
+}
+
+bennysuggs() {
+    echo "brendan@bywatersolutions.com joy@bywatersolutions.com"
+    echo "Benny suggs $(date +%Y-%m-%d)"
+}
+
+tl() {
+    ticketlink $1 > /tmp/${1}.markdown
+    ( cd /tmp; bmd ${1}.markdown; xdg-open ${1}.html )
+}
+
+grepticket ()
+{ 
+    ticketnum=$1;
+    shift;
+    rt show $ticketnum | egrep --color=auto -i "$*";
+    sleep 1
+}
+
+ticket () 
+{ 
+    local ticket_url="${RTSERVER}/Ticket/Display.html?id=${1}";
+    echo "$ticket_url";
+    chromium-browser --new-window "$ticket_url";
+    sleep 1;
+    echo
+}
+

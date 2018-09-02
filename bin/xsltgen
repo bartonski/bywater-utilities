@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# usage: xsltgen TAG CODE SUMMARY LABEL
+#
+# example: xsltgen "024" "a" "project_num" "Project Number" 
+
+TAG="$1"
+shift
+
+CODE="$1"
+shift
+
+SUMMARY="$1"
+shift
+
+LABEL="$@"
+
+cat << XSLT
+        <xsl:for-each select="marc:datafield[@tag='$TAG']">
+            <xsl:for-each select="current()/marc:subfield[@code='$CODE']">
+                <span class="results_summary $SUMMARY">
+                <span class="label">$LABEL: </span>
+                    <xsl:value-of select="current()"/>
+                </span>
+            </xsl:for-each>
+        </xsl:for-each>
+XSLT

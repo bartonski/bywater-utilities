@@ -32,13 +32,12 @@ my $opt_borrower_card_num;
 my $opt_item_barcode;
 
 GetOptions(
-      "cardnum=s"   => \$opt_borrower_card_num
+      "cardnumber=s"   => \$opt_borrower_card_num
     , "barcode=s"   => \$opt_item_barcode
 );
 
 my $item           = GetItem( GetItemnumberFromBarcode( $opt_item_barcode ) );
-my ( $borrower )   = &GetMemberDetails( '', $opt_borrower_card_num ); # not sure why this was returned in list context, but it's that way in the perldoc.
-my $borrowerinfo   = C4::Members::GetMember( borrowernumber => $borrower->{borrowernumber} );
+my $borrower       = C4::Members::GetMember( cardnumber =>  $opt_borrower_card_num );
 my $branch         = C4::Circulation::_GetCircControlBranch( $item, $borrower );
 my $borrowertype   = $borrower->{categorycode};
 my $biblioitem     = GetBiblioItemData( $item->{biblioitemnumber} );
