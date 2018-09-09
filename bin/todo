@@ -16,23 +16,87 @@
 #                           * 'My open tickets updated by someone else'
 #  OPEN_TICKETS_URL -- Url of 'Open Tickets' dashboard.
 
-dts() { date +%Y%m%d_%H.%M.%S; }
+dts="$(date +%Y%m%d_%H.%M.%S)"
 TODAY="Today: $( date +'%Y-%m-%d')"
+USER_SPECIFIED_EDIT_FILE=0
+
 # TODO: test for existence of directory set in $MARKDOWN_PATH,
 #       create it if it does not exist.
 MARKDOWN_PATH="$HOME/Documents/markdown"
 # TODO: Might want to create '$MARKDOWN_COMMAND' variable, 
 #       which could take 'markdown', 'pandoc' or
 #       other markdown program.
-BASENAME='todo' 
-PREFORMAT_FILE="$MARKDOWN_PATH/${BASENAME}$(dts).preformat"
-MARKDOWN_FILE="$MARKDOWN_PATH/${BASENAME}$(dts).markdown"
-EDIT_FILE="$MARKDOWN_PATH/edit$(dts).txt"
-ITEM_FILE="$MARKDOWN_PATH/items$(dts).txt"
-HTML_FILE="$MARKDOWN_PATH/${BASENAME}$(dts).html"
+# TODO: Add command line options:
+#       -e -- edit existing edit file
+#       -n -- start new edit file
+#       -l -- list last edit file
+#       -t -- create edit file with tomorrow's date -- good for running todo at the end of the day.
+#       My thought is this: if no edit file exists for a given day,
+#       create a new file for the day ( the same behaviour as '-n' )
+#       If one or more edit files exists for the day, edit the most
+#       recent ( the same as '-e' with no arguments ).
+#       If the '-n' argument is specified, an new edit file will
+#       be created, regardless of whether or not one exists for the day
+#       If -e is specified with no further arguments, the most recent 
+#       edit file is re-loaded
+#       If a file name is given after -e, that file will be used as the
+#       edit file regardless of whetehr or not it is the most recent.
+#     
+
+lastfile () 
+{ 
+    local directory="${1}"
+    local fileglob="${2}"
+    find "${directory}" -maxdepth 1 -type f -name "$fileglob" -printf "%T+ %p\n" | sort -n | tail -1 | sed 's/[^[:space:]]\+ //'
+}
+
+
+options=":e:lt"
+while getopts ${options} o;
+do
+    case ${o} in
+        e)
+            USER_SPECIFIED_EDIT_FILE=1
+            EDIT_FILE=${OPTARG}
+            ;;
+        l)
+            lastfile "${MARKDOWN_PATH}" 'edit*.txt'
+            exit
+            ;;
+        t)
+            dts="$(date -d 'tomorrow 00:00:00' +%Y%m%d_%H.%M.%S)"
+            TODAY="Today: $( date -d 'tomorrow 00:00:00' +'%Y-%m-%d')"
+            ;;
+        :)                
+            USER_SPECIFIED_EDIT_FILE=1
+            EDIT_FILE="$(lastfile ${MARKDOWN_PATH} 'edit*.txt')"
+    esac
+done
+
+BASENAME="$(basename $0)"
+EDIT_FILE="${EDIT_FILE:-$MARKDOWN_PATH/edit${dts}.txt}"
+ITEM_FILE="$MARKDOWN_PATH/items${dts}.txt"
+PREFORMAT_FILE="$MARKDOWN_PATH/${BASENAME}${dts}.preformat"
+MARKDOWN_FILE="$MARKDOWN_PATH/${BASENAME}${dts}.markdown"
+HTML_FILE="$MARKDOWN_PATH/${BASENAME}${dts}.html"
 PUBLIC_HTML_FILE="${BASENAME}.html"
-SUPPORT_DASHBOARD_URL="http://ticket.bywatersolutions.com/Dashboards/881/Barton%20Support%20Dashboard"
-OPEN_TICKETS_URL="http://ticket.bywatersolutions.com/Search/Results.html?Format=%27%3Ca%20href%3D%22%2FTicket%2FDisplay.html%3Fid%3D__id__%22%3E__id__%3C%2Fa%3E%2FTITLE%3A%23%27%2C%0A%27%3Ca%20href%3D%22%2FTicket%2FDisplay.html%3Fid%3D__id__%22%3E__Subject__%3C%2Fa%3E%2FTITLE%3ASubject%27%2C%0A%27__Priority__%27%2C%0A%27__QueueName__%27%2C%0A%27__ExtendedStatus__%27&Order=DESC%7CASC%7CASC%7CASC&OrderBy=Priority%7C%7C%7C&Query=Owner%20%3D%20%27__CurrentUser__%27%20AND%20(%20%20Status%20%3D%20%27new%27%20OR%20Status%20%3D%20%27needsinfo%27%20OR%20Status%20%3D%20%27open%27%20)&RowsPerPage=100"
+RT_URL="http://ticket.bywatersolutions.com"
+SUPPORT_DASHBOARD_URL="$RT_URL/Dashboards/881/Barton%20Support%20Dashboard"
+OPEN_TICKETS_URL="$RT_URL/Search/Results.html"\
+"?Format=%27%3Ca%20href%3D%22%2FTicket%2FDisplay.html"\
+"%3Fid%3D__id__%22%3E__id__%3C%2Fa%3E%2FTITLE%3A%23%27"\
+"%2C%0A%27%3Ca%20href%3D%22%2FTicket%2FDisplay.html"\
+"%3Fid%3D__id__%22%3E__Subject__%3C%2Fa%3E%2FTITLE%3ASubject%27"\
+"%2C%0A%27__Priority__%27"\
+"%2C%0A%27__QueueName__%27"\
+"%2C%0A%27__ExtendedStatus__%27"\
+"&Order=DESC%7CASC%7CASC%7CASC"\
+"&OrderBy=Priority%7C%7C%7C"\
+"&Query=Owner%20%3D%20%27__CurrentUser__"\
+"%27%20AND%20(%20%20Status%20%3D%20%27new%27%20OR%20Status%20%3D%20"\
+"%27needsinfo%27%20OR%20Status%20%3D%20%27open%27%20)"\
+"&RowsPerPage=100"
+
 BIN="$(dirname $0)"
 
 open_in_browser() {
@@ -44,20 +108,6 @@ open_in_browser() {
         echo "Open ${1} in your web browser."
     fi
 }
-
-if [ ! -d $MARKDOWN_PATH ]
-then
-    mkdir -p $MARKDOWN_PATH
-fi
-
-open_in_browser "${SUPPORT_DASHBOARD_URL}"
-echo "Paste tickets from Support Dashboard ${SUPPORT_DASHBOARD_URL} here, the press <Control+d>"
-cat > $ITEM_FILE
-
-open_in_browser "${OPEN_TICKETS_URL}"
-echo "Paste tickets from 'Open Tickets' report here, the press <Control+d>"
-echo "## Other Tickets" >> $ITEM_FILE
-cat >> $ITEM_FILE
 
 ## Make the following changes:
 # Remove initial hash characters, except when doubled.
@@ -74,11 +124,11 @@ set -x
     sed -i 's/copy Edit/Edit/' $items           ## Normalize report headers
     sed -i 's/\(.*[^\\]\)Edit/\n## \1/' $items  ## don't remove the newline here -- it's literal text.
     sed -i 's/\\([Ee]dit)/\t/' $items           ## Un-escape '\Edit'.
-    chopline='s/[[:space:]]\+\+[0-9]\+[[:space:]]\+\(Support\|Migrations\).*//'
+    chopline='s/[[:space:]]\+\+[0-9]\+[[:space:]]\+\(Support\|Migrations\|Bugs\).*//'
     add_semicolons='s|^\([[:digit:]]\+\)|\1;|'
     change_ticket_numbers='s|^\([[:digit:]]\+\)|@rt \1|'
     change_colons='s/:/;/g'
-    escape_underscores='s/_/\\_/'
+    escape_underscores='s/\([^\]\)_/\1\\_/g'          ## Escape all un-escaped underscores.
     sed -i "$chopline; $add_semicolons; $change_ticket_numbers; $change_colons; $escape_underscores" $items
 set +x
 }
@@ -86,18 +136,38 @@ set +x
 preformat() {
     local infile=$1
     local outfile=$2
-    urlify='s|@rt \([[:digit:]]\+\)|<a href="http://ticket.bywatersolutions.com/Ticket/Display.html?id=\1">@rt \1</a>|g'
+    urlify="s|@rt \\([[:digit:]]\\+\\)|<a href=\"$RT_URL/Ticket/Display.html?id=\\1\">@rt \\1</a>|g"
     sed "$urlify" $1 > $outfile
     perl -i $BIN/semicolon_to_table.pl $outfile
 }
 
-# TODO: turn ticket numbers into ticket URLs.
-#sed -i 's/ \+[0-9]\+[[:space:]]\+Support.*//; s/^/* /; s/_/\\_/' $ITEM_FILE
-format_raw $ITEM_FILE
+if [ ! -d $MARKDOWN_PATH ]
+then
+    mkdir -p $MARKDOWN_PATH
+fi
 
-cat $ITEM_FILE >> $EDIT_FILE
+if [[ $USER_SPECIFIED_EDIT_FILE -eq 0 ]]
+then
+    open_in_browser "${SUPPORT_DASHBOARD_URL}"
+    echo "Paste tickets from Support Dashboard ${SUPPORT_DASHBOARD_URL} here, the press <Control+d>"
+    cat > $ITEM_FILE
 
-printf '
+    open_in_browser "${OPEN_TICKETS_URL}"
+    echo "Paste tickets from 'Open Tickets' report here, the press <Control+d>"
+    echo "## Other Tickets" >> $ITEM_FILE
+    cat >> $ITEM_FILE
+
+    # TODO: turn ticket numbers into ticket URLs.
+    #sed -i 's/ \+[0-9]\+[[:space:]]\+Support.*//; s/^/* /; s/_/\\_/' $ITEM_FILE
+    format_raw $ITEM_FILE
+
+    printf "## What's holding me back
+
+## What I did yesterday
+
+## What I'm doing today
+
+## What I learned
 
  8:00    ;
  8:30    ;
@@ -122,7 +192,13 @@ printf '
  18:00   ;
  18:30   ;
  19:00   ;
- 19:30   ;' >> $EDIT_FILE 
+ 19:30   ;
+
+" >> $EDIT_FILE 
+
+    consolidate_ticketlist.pl $ITEM_FILE >> $EDIT_FILE
+
+fi
 
 ## The following vim macros will be of great assistance when editing
 # Macro 'a': Append text of RT reminder to the end of the corresponding ticket line, then delete the reminder.
@@ -182,6 +258,8 @@ border: 1px solid black;
 </style>
 
 # $TODAY
+
+[My Support Tickets]($RT_URL/Dashboards/596/My%20Support%20Tickets)
 
 MD
 
