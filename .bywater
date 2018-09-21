@@ -421,7 +421,7 @@ md() {
     test -d $htmldir || mkdir $htmldir
     local base="$(basename $1 '.markdown')"
     local htmlfile="$htmldir/${base}.html"
-    pandoc -f markdown $1 > "$htmlfile"
+    pandoc -f markdown+pipe_tables $1 > "$htmlfile"
     echo "$htmlfile"
 }
 
@@ -432,7 +432,7 @@ bmd ()
     test -d $htmldir || mkdir $htmldir;
     local base="$(basename $1 '.markdown')";
     local htmlfile="$htmldir/${base}.html";
-    pandoc -f markdown $1 > "$htmlfile";
+    pandoc -f markdown+pipe_tables $1 > "$htmlfile";
     echo "$htmlfile"
 }
 
