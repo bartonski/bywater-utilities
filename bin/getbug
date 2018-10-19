@@ -6,6 +6,8 @@ use Data::Dumper;
 
 my $tracker = "https://bugs.koha-community.org/bugzilla3";
 
+shift @ARGV if( $ARGV[0] =~ /bug/i );
+
 my $bug_number = $ARGV[0];
 my $client = REST::Client->new();
 my $json_text = $client->GET("$tracker/rest/bug/$bug_number");
