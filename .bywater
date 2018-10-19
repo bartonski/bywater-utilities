@@ -761,3 +761,7 @@ ticket ()
     echo
 }
 
+grepnotes() {
+    egrep -i -- "$@" ${EMPLOYER_PATH}/daynotes/markdown/*.markdown
+}
+
