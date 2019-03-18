@@ -1,6 +1,101 @@
-#! /bin/sh
+#! /usr/bin/perl
 
-url="$(echo $1 | sed 's|.*cgi-bin|/cgi-bin|')"
-fieldname=$2
+use Modern::Perl;
+use Getopt::Long;
 
-echo "CONCAT('<a href=\\\"${url}?$fieldname=', $fieldname, '\\\">', $fieldname, '</a>' ) AS $fieldname  " 
+my $linkto=undef;
+my $table=undef;
+my $display=undef;
+my $as=undef;
+my $list=0;
+
+GetOptions(
+    "linkto=s" => \$linkto,
+    "table=s" => \$table,
+    "display=s" => \$display,
+    "as=s" => \$as
+    "list" => \$list
+);
+
+sub column {
+    my ( $column, $table ) = @_;
+    return defined( $table ) ? $table.$column : $column;
+}
+
+sub literal {
+    return qq(') . join( '',  @_ ) . qq(');
+}
+
+my $linkinfo = {
+    moremember      => { label   => 'Patron information screen',  path    => 'members/moremember.pl',
+                         params  => [ [literal('borrowernumber'), column ( 'borrowernumber', $table ) ] ], display => 'borrowernumber'  },
+    notices         => { label   => 'Patron notices',  path => 'members/notices.pl',
+                         params  => [ [literal('borrowernumber'), column ( 'borrowernumber', $table ) ] ], display => 'borrowernumber'  },
+    files           => { label   => 'Patron files',  path => 'members/files.pl',
+                         params  => [ [literal('borrowernumber'), column ( 'borrowernumber', $table ) ] ], display => 'borrowernumber'  },
+    circulation     => { label   => 'Circulation',  path => 'circ/circulation.pl',
+                         params  => [ [literal('borrowernumber'), column ( 'borrowernumber', $table ) ] ], display => 'borrowernumber'  },
+    boraccount      => { label   => 'Patron accounts and fines',  path => 'members/boraccount.pl',
+                         params  => [ [literal('borrowernumber'), column ( 'borrowernumber', $table ) ] ], display => 'borrowernumber'  },
+    maninvoice      => { label   => 'Patron invoice',  path => 'members/maninvoice.pl',
+                         params  => [ [literal('borrowernumber'), column ( 'borrowernumber', $table ) ] ], display => 'borrowernumber'  },
+    patronlog       => { label   => 'Patron log',  path => 'tools/viewlog.pl',
+                         params  => [ [literal( 'do_it'), literal('1') ],
+                                      [literal( 'modules' ), literal('CIRCULATION')] ,
+                                      [literal('object'), column ( 'borrowernumber', $table )]
+                                    ],
+                         display => 'borrowernumber'  },
+    detail          => { label   => 'Show bib record',  path => 'catalogue/detail.pl',
+                         params  => [ [ literal( 'biblionumber' ), column( 'biblionumber', $table )] ],
+                         display => 'biblionumber'  },
+    marcdetail      => { label   => 'MARC detail',  path => 'catalogue/MARCdetail.pl',
+                         params  => [ [ literal( 'biblionumber' ), column( 'biblionumber', $table )] ],
+                         display => 'biblionumber'  },
+    additem         => { label   => 'Add item',  path => 'cataloguing/additem.pl',
+                         params  => [ [ literal( 'biblionumber' ), column( 'biblionumber', $table )] ],
+                         display => 'biblionumber'  },
+    placehold       => { label   => 'Place hold',  path => 'reserve/request.pl',
+                         params  => [ [ literal( 'biblionumber' ), column( 'biblionumber', $table )] ],
+                         display => 'biblionumber'  },
+    addbiblio       => { label   => 'Add/Edit biblio record',  path => 'cataloguing/addbiblio.pl',
+                         params  => [ [ literal( 'biblionumber' ), column( 'biblionumber', $table )] ],
+                         display => 'biblionumber'  },
+    basket          => { label   => 'Aq Basket',  path => '/cgi-bin/koha/acqui/basket.pl',
+                         params  => [ [ literal( 'basketno' ), column( 'basketno', $table ) ] ],
+                         display => 'basketno'  },
+    circrules       => { label   => 'admin/smart-rules.pl?branch=',  path => 'admin/smart-rules.pl',
+                         params  => [ [ literal( 'branch' ) ,  column( 'branchcode', $table ) ] ],
+                         display => 'branchcode'  },
+    additem         => { label   => 'Add/Edit item',  path => 'cataloguing/additem.pl',
+                         params  => [
+                                        [ literal( 'op' ), literal('edititem') ],
+                                        [ literal( 'biblionumber' ), column( 'biblionumber', $table ) ],
+                                        [ literal( 'itemnumber' ), column( 'itemnumber', $table ) ]
+                                    ],
+                         display => 'itemnumber'  },
+    oredetail       => { label   => 'Item detail',  path => 'catalogue/moredetail.pl',
+                         params  => [
+                                        [ literal( 'biblionumber' ), column( 'biblionumber', $table ) ],
+                                        [ literal( 'itemnumber' ), column( 'itemnumber', $table ) ]
+                                    ],
+                         display => 'itemnumber'  },
+    foo             => { label   => 'foo',  path => 'foo',
+                         params  => [ literal( 'foo' ), column( 'foo', $table ) ],
+                         display => 'foo'  },
+};
+
+$display //= $linkinfo->{$linkto}->{display};
+$as //= $linkinfo->{$linkto}->{display};
+
+
+my @params = map {  join ' , ',  $_->[0] ,  $_->[1] } @{$linkinfo->{$linkto}->{params}};
+say    "    -- $linkinfo->{$linkto}->{label}";
+print '    CONCAT('
+      . join( ' , ' ,
+          literal( '<a href=\"/cgi-bin/koha/', $linkinfo->{$linkto}->{path}, '?'  ),
+          join( literal( '&' ) , @params ),
+          literal( '\">' ), 
+          column( $display, $table ),
+          literal( '</a>' )
+      )
+      . "), AS '$as',\n" ; 

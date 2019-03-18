@@ -2,10 +2,10 @@
 function! DoTicket()
   for lineno in range(a:firstline, a:lastline)
     let line = getline(lineno)
-    let line = substitute( line, '\s\+\(open\|onhold\|closed\|resolved\|needsinfo\)\s\+\(Support\|Reports\|Development\|Systems\|Bugs\|Migrations\).*', '', 'e' )
-    let line = substitute( line, '\s\+\(Support\|Reports\|Development\|Systems\|Bugs\|Migrations\)\s\+\(open\|onhold\|closed\|resolved\|needsinfo\|answered\).*', '', 'e' )
+    let line = substitute( line, '\s\+\(open\|onhold\|closed\|resolved\|needsinfo\|answered\|suspended\)\s\+\(Support\|Reports\|Development\|Systems\|Bugs\|Migrations\).*', '', 'e' )
+    let line = substitute( line, '\s\+\(Support\|Reports\|Development\|Systems\|Bugs\|Migrations\)\s\+\(open\|onhold\|closed\|resolved\|needsinfo\|answered\|suspended\).*', '', 'e' )
     let line = substitute( line, '\d\+\s\+\(years\|months\|weeks\|days\|hours\|minutes\)\s\+\(ago\s\+\)*', ' -- ', 'e' )
-    let line = substitute( line, '^#*\(\<[0-9]\+\>\)[^ ]*[ ]\+', 'ticket \1 | UPDATED | ', 'e' )
+    let line = substitute( line, '^#*\(\<[0-9]\+\>\)\S*\s\+', 'ticket \1 | UPDATED | ', 'e' )
     call setline(lineno, line)
   endfor
 endfunction
@@ -54,7 +54,9 @@ endfunction
 command! FormatSQL call DoFormatSQL()    
 
 function! CloseTicket()
+    call DoTicket()
     s/UPDATED/CLOSED /
+    execute "normal! dd/^DONE\<CR>P''"
 endfunction
 
 command! Close call CloseTicket()
@@ -64,3 +66,19 @@ function! BugTicket()
 endfunction
 
 command! Bug call BugTicket()
+
+inoremap <F6> <esc>dd/^DONE<CR>P:Ticket<CR>i
+nnoremap <F6> dd/^DONE<CR>P:Ticket<CR>''
+
+function! HandleURL()
+  let s:bugnum = expand("<cword>")
+  let s:uri = "https://ticket.bywatersolutions.com/Ticket/Display.html?id=" . s:bugnum
+  echom s:uri
+  if s:uri != ""
+    silent exec "!xdg-open '".s:uri."'"
+  else
+    echom "No URI found in line."
+  endif
+endfunction
+noremap <F12>:call HandleURL()<cr>
+

@@ -167,6 +167,10 @@ _sugarlookup ()
 }
 
 complete -F _sugarlookup kohaurl
+complete -F _sugarlookup opacurl
+complete -F _sugarlookup kohareport
+complete -F _sugarlookup kohareportnum
+complete -F _sugarlookup kohanewreport
 complete -F _sugarlookup sugar
 
 # look up opac Staff client URL in 'ticketlinks.txt', open URL in web browser
@@ -376,6 +380,20 @@ kohadlbib() {
     kohaurl "$1" "cgi-bin/koha/catalogue/export.pl?format=utf8&op=export&bib=$2"
 }
 
+# List koha API components
+koharest() {
+    kohaurl "$1" "api/v1/.html"
+}
+
+# Coverflow configuration
+kohacoverflow() {
+    kohaurl "$1" "cgi-bin/koha/plugins/run.pl?class=Koha::Plugin::Com::ByWaterSolutions::CoverFlow&method=configure"
+}
+
+# Authorized values, limit by category
+kohaav() {
+    kohaurl "$1" "cgi-bin/koha/admin/authorised_values.pl?searchfield=$2"
+}
 
 kohaviewlog() {
     # TODO: we could run a case statement on $module, then prompt for object.
@@ -408,6 +426,8 @@ marcrefrence() {
 kohaselfcheck() {
     opacurl "$1" "cgi-bin/koha/sco/sco-main.pl"
 }
+
+
 
 # Create comment suitable for adding to crontab. Takes RT ticket number as argument. ouput looks like this:
 # 2014-02-07 -- Barton Chittenden -- http://ticket.bywatersolutions.com/Ticket/Display.html?id=18204
@@ -549,10 +569,11 @@ porttest() { echo $'\c]quit' | $CLIPCOPY ; telnet $1 $2; }
 dn () 
 { 
     local notefile=$1;
+    local notedate=$2
     echo $notefile;
     echo;
-    echo "Daily Wrap-up ( $( date +'%a %b %d, %Y') )";
-    sed -n '/^---- Done Today/,/^----/p' $notefile | grep --color=auto --color=auto -v '^----';
+    echo "Daily Wrap-up ( $( date -d "$notedate" +'%a %b %d, %Y') )";
+    sed -n '/^---- Done Today/,/^----/p' $notefile | egrep -v '^----|^DONE$';
     local EOB="$(sed -n '/^---- Done Today/,/^----/p' $notefile | grep EOB)";
     if [[ ! -z $EOB ]]; then
         echo 
@@ -567,9 +588,9 @@ dn ()
     echo "https://mail.google.com/mail/u/1/#search/Daily+Wrap-up"
     checkdir "$EMPLOYER_PATH/daynotes/markdown/"
     sed -n '/^---- Personal Notes/,/^----/p' $notefile | grep -v '^----' > \
-        "$EMPLOYER_PATH/daynotes/markdown/$(date +%Y%m%d)_notes.markdown"
+        "$EMPLOYER_PATH/daynotes/markdown/$(date -d "$notedate" +%Y%m%d)_notes.markdown"
     cd $EMPLOYER_PATH/daynotes/markdown/
-    local htmlfile=$(bmd $(date +%Y%m%d)_notes.markdown)
+    local htmlfile=$(bmd $(date -d "$notedate" +%Y%m%d)_notes.markdown)
     $OPEN "$htmlfile"
 }
 
@@ -581,6 +602,7 @@ daynote() {
     then
     cat > $notefile << DAYNOTE
 ---- Done Today
+DONE
 
 Linux tip of the day:
 
@@ -588,7 +610,7 @@ What I Learned:
 
 ---- My Tickets
 
-Other tickets
+---- My Other tickets
 
 ---- Queries
 -- 
@@ -616,7 +638,7 @@ DAYNOTE
     fi
     vim -S $EMPLOYER_PATH/.bywater_vimrc +/"My Tickets" $notefile
     echo
-    dn $notefile
+    dn $notefile "$(date +%Y-%m-%d)"
 }
 
 # Reads argument list containing RT ticket numbers, search for unread emails containing those tickets.
@@ -741,7 +763,7 @@ bennysuggs() {
 
 tl() {
     ticketlink $1 > /tmp/${1}.markdown
-    ( cd /tmp; bmd ${1}.markdown; xdg-open ${1}.html )
+    ( cd /tmp; bmd ${1}.markdown; $OPEN ${1}.html )
 }
 
 grepticket ()
@@ -756,7 +778,7 @@ ticket ()
 { 
     local ticket_url="${RTSERVER}/Ticket/Display.html?id=${1}";
     echo "$ticket_url";
-    chromium-browser --new-window "$ticket_url";
+    chromium-browser --new-window "$ticket_url" 2> /dev/null &
     sleep 1;
     echo
 }
@@ -765,3 +787,20 @@ grepnotes() {
     egrep -i -- "$@" ${EMPLOYER_PATH}/daynotes/markdown/*.markdown
 }
 
+ticketlist() {
+    sed -n '/^---- My Tickets/,/^----/p' $notefile | grep -v '^----' > /tmp/ticketlist.txt
+    ( 
+        cd /tmp/
+        ticketlist_to_markdown.pl ticketlist.txt > ticketlist.markdown \
+        && bmd ticketlist.markdown \
+        && $OPEN ticketlist.html 
+    )
+}
+
+bugticket() {
+    $OPEN "https://ticket.bywatersolutions.com/Search/Simple.html?q=cf.9%3A${1}"
+}
+
+remind() {
+    echo "/remind @barton \"$@\" tomorrow morning" | xclip
+}
