@@ -1,0 +1,48 @@
+#! /usr/bin/perl
+
+use warnings;
+use strict;
+
+# TODO: Add perldoc
+
+# TODO: add optional argument for table; if present create entire query, 
+# a-la the 'qm' shell function:
+# 
+# qm () 
+# { 
+#     qm="$(querymarc $1)";
+#     echo "select $qm from biblioitems where $qm != '' limit 1;";
+#     echo "select marcxml from biblioitems where $qm != '' limit 1;"
+# }
+# 
+# ExtractValue( marcxml, '//datafield[@tag=035]/subfield[@code=\"a\"]')
+
+my %control_field = (
+      '001'    => 'controlfield'
+    , '002'    => 'controlfield'
+    , '003'    => 'controlfield'
+    , '004'    => 'controlfield'
+    , '005'    => 'controlfield'
+    , '006'    => 'controlfield'
+    , '007'    => 'controlfield'
+    , '008'    => 'controlfield'
+    , 'leader' => 'leader'
+);
+
+my ( $tag, $subfield ) = split '\$', $ARGV[0];
+$subfield ||= '';
+my $column = $ARGV[1] // "metadata";
+my $fieldtype = $control_field{$tag};
+
+$fieldtype ||= 'datafield';
+
+
+$tag = sprintf("%03d", $tag);
+my $tag_part = "//$fieldtype" . "[\@tag=$tag]";
+my $subfield_part = $subfield || $subfield eq '0' ? "/subfield[\@code=\"$subfield\"]" : "/*";
+
+if( $fieldtype eq 'controlfield' or $fieldtype eq 'leader' ) {
+    print "ExtractValue( $column, '$tag_part'  )\n";
+} else {
+    print "ExtractValue( $column, '$tag_part$subfield_part' )\n";
+}
